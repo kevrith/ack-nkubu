@@ -5,7 +5,7 @@ import { uploadToCloudinary } from '@/lib/cloudinary';
 interface MediaUploaderProps {
   accept: string;
   resourceType: 'image' | 'video' | 'audio' | 'raw';
-  onUploadComplete: (url: string, publicId: string, duration?: number) => void;
+  onUploadComplete: (url: string, publicId?: string, duration?: number) => void;
   maxSizeMB?: number;
   label?: string;
 }

@@ -6,11 +6,27 @@ import { supabase } from '@/lib/supabase'
 export function DesktopLanding() {
   const [notices, setNotices] = useState<any[]>([])
   const [sermons, setSermons] = useState<any[]>([])
+  const [settings, setSettings] = useState({
+    church_name: 'ACK St Francis Nkubu',
+    church_email: 'info@ackparish.org',
+    church_phone: '+254 700 000 000',
+    church_address: 'Nkubu, Meru County, Kenya'
+  })
 
   useEffect(() => {
     loadNotices()
     loadSermons()
+    loadSettings()
   }, [])
+
+  async function loadSettings() {
+    const { data } = await supabase.from('cms_settings').select('*')
+    if (data) {
+      const settingsObj: any = {}
+      data.forEach(s => { settingsObj[s.key] = s.value })
+      setSettings(prev => ({ ...prev, ...settingsObj }))
+    }
+  }
 
   async function loadNotices() {
     const { data } = await supabase
@@ -48,7 +64,7 @@ export function DesktopLanding() {
         <nav className="relative z-10 container mx-auto px-6 py-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/MERU.png" alt="Logo" className="w-12 h-12 rounded-full" />
-            <span className="text-2xl font-playfair text-white">ACK St Francis Nkubu</span>
+            <span className="text-2xl font-playfair text-white">{settings.church_name}</span>
           </div>
           <div className="flex gap-4">
             <Link to="/login" className="px-6 py-2 text-white hover:text-gold transition">Sign In</Link>
@@ -58,7 +74,7 @@ export function DesktopLanding() {
 
         <div className="relative z-10 container mx-auto px-6 h-[calc(100vh-100px)] flex items-center">
           <div className="max-w-3xl">
-            <h1 className="text-7xl font-playfair text-white mb-6 leading-tight">Welcome to<br />ACK St Francis Nkubu</h1>
+            <h1 className="text-7xl font-playfair text-white mb-6 leading-tight">Welcome to<br />{settings.church_name}</h1>
             <p className="text-2xl text-white/90 mb-8 leading-relaxed">A community of faith, hope, and love. Join us in worship, fellowship, and service.</p>
             <div className="flex gap-4">
               <Link to="/register" className="px-8 py-4 bg-gold text-navy font-semibold rounded-lg hover:bg-gold-600 text-lg">Become a Member</Link>
@@ -176,9 +192,9 @@ export function DesktopLanding() {
               <Link to="/register" className="inline-block px-8 py-4 bg-gold text-navy font-semibold rounded-lg hover:bg-gold-600 text-lg">Get Started Today</Link>
             </div>
             <div className="space-y-4">
-              <ContactItem icon={<Phone />} text="+254 700 000 000" />
-              <ContactItem icon={<Mail />} text="info@ackparish.org" />
-              <ContactItem icon={<MapPin />} text="Nkubu, Meru County, Kenya" />
+              <ContactItem icon={<Phone />} text={settings.church_phone} />
+              <ContactItem icon={<Mail />} text={settings.church_email} />
+              <ContactItem icon={<MapPin />} text={settings.church_address} />
             </div>
           </div>
         </div>

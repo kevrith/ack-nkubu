@@ -28,7 +28,7 @@ export function ChapterView() {
   const [chapter, setChapter] = useState<BibleChapter | null>(null)
   const [loading, setLoading] = useState(false)
   const [showChapterSelector, setShowChapterSelector] = useState(false)
-  const [totalChapters, setTotalChapters] = useState(150)
+  const [totalChapters] = useState(150)
 
   useEffect(() => {
     if (!currentChapter) return

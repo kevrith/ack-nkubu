@@ -55,7 +55,7 @@ export function PostForm({ onSuccess }: PostFormProps) {
       )}
       {showUploader && (
         <div className="mb-4">
-          <MediaUploader onUploadComplete={(url) => { setImageUrl(url); setShowUploader(false); }} />
+          <MediaUploader accept="image/*" resourceType="image" onUploadComplete={(url) => { setImageUrl(url); setShowUploader(false); }} />
         </div>
       )}
       <div className="flex gap-2">

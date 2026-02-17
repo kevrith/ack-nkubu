@@ -100,7 +100,7 @@ export function ProfilePage() {
 
         {showUploader && editing && (
           <div className="border rounded-lg p-4 bg-gray-50">
-            <MediaUploader onUploadComplete={(url) => { setAvatarUrl(url); setShowUploader(false); }} />
+            <MediaUploader accept="image/*" resourceType="image" onUploadComplete={(url) => { setAvatarUrl(url); setShowUploader(false); }} />
           </div>
         )}
 

@@ -15,7 +15,7 @@ export function BibleSearch() {
     
     setLoading(true)
     try {
-      const data = await bibleService.search(version, query)
+      const data: any = await bibleService.search(version, query)
       setResults(data.verses || [])
     } catch (error) {
       console.error('Search error:', error)

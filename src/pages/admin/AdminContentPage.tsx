@@ -439,7 +439,7 @@ export function AdminContentPage() {
               resourceType={sermonType === 'text' ? 'raw' : sermonType as any}
               onUploadComplete={(url, publicId) => {
                 setSermonMediaUrl(url)
-                setSermonPublicId(publicId)
+                setSermonPublicId(publicId || "")
               }}
               maxSizeMB={sermonType === 'video' ? 500 : 100}
               label={`Upload ${sermonType === 'audio' ? 'Audio' : sermonType === 'video' ? 'Video' : 'File'}`}

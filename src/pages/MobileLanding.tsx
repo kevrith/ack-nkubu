@@ -1,13 +1,29 @@
 import { Link } from 'react-router-dom'
 import { BookOpen, Users, Heart, Calendar, Download } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase'
 
 export function MobileLanding() {
+  const [churchName, setChurchName] = useState('ACK St Francis Nkubu')
+
+  useEffect(() => {
+    loadSettings()
+  }, [])
+
+  async function loadSettings() {
+    const { data } = await supabase
+      .from('cms_settings')
+      .select('*')
+      .eq('key', 'church_name')
+      .single()
+    if (data) setChurchName(data.value)
+  }
   return (
     <div className="min-h-screen bg-navy text-white">
       {/* Hero */}
       <div className="px-6 pt-12 pb-8 text-center">
         <img src="/MERU.png" alt="Logo" className="w-24 h-24 rounded-3xl mx-auto mb-6" />
-        <h1 className="text-3xl font-playfair mb-3">ACK St Francis Nkubu</h1>
+        <h1 className="text-3xl font-playfair mb-3">{churchName}</h1>
         <p className="text-navy-100 mb-8">Your spiritual home in your pocket</p>
         <Link to="/login" className="block w-full py-4 bg-gold text-navy font-semibold rounded-xl mb-3">
           Sign In
