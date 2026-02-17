@@ -1,14 +1,14 @@
 importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js')
 importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js')
 
-// Firebase config will be injected during build
+// Replace these values with your Firebase config
 firebase.initializeApp({
-  apiKey: self.FIREBASE_CONFIG?.apiKey || 'AIzaSyAc2vHnVWLNIoDPwO6VLhruB-GVhOtF6UU',
-  authDomain: self.FIREBASE_CONFIG?.authDomain || 'acknkubu.firebaseapp.com',
-  projectId: self.FIREBASE_CONFIG?.projectId || 'acknkubu',
-  storageBucket: self.FIREBASE_CONFIG?.storageBucket || 'acknkubu.firebasestorage.app',
-  messagingSenderId: self.FIREBASE_CONFIG?.messagingSenderId || '728140484672',
-  appId: self.FIREBASE_CONFIG?.appId || '1:728140484672:web:2f3acda3ede36f57b8cfa5',
+  apiKey: 'YOUR_FIREBASE_API_KEY',
+  authDomain: 'YOUR_PROJECT.firebaseapp.com',
+  projectId: 'YOUR_PROJECT_ID',
+  storageBucket: 'YOUR_PROJECT.firebasestorage.app',
+  messagingSenderId: 'YOUR_SENDER_ID',
+  appId: 'YOUR_APP_ID',
 })
 
 const messaging = firebase.messaging()
