@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Users, Shield, Edit2, Save, X } from 'lucide-react';
+import { Users, Edit2, Save, X, Trash2, UserPlus } from 'lucide-react';
 
 interface Profile {
   id: string;
@@ -17,8 +17,10 @@ export function AdminUsersPage() {
   const [users, setUsers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editRole, setEditRole] = useState<string>('');
+  const [editData, setEditData] = useState({ role: '', full_name: '', phone: '', cell_group: '' });
   const [searchTerm, setSearchTerm] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newUser, setNewUser] = useState({ email: '', password: '', full_name: '', phone: '', role: 'basic_member' });
 
   useEffect(() => {
     loadUsers();
@@ -40,18 +42,59 @@ export function AdminUsersPage() {
     }
   };
 
-  const updateRole = async (userId: string, newRole: string) => {
+  const updateUser = async (userId: string) => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ role: newRole })
+        .update({ 
+          role: editData.role,
+          full_name: editData.full_name,
+          phone: editData.phone || null,
+          cell_group: editData.cell_group || null
+        })
         .eq('id', userId);
 
       if (error) throw error;
-      setUsers(users.map(u => u.id === userId ? { ...u, role: newRole as any } : u));
+      await loadUsers();
       setEditingId(null);
     } catch (error) {
-      console.error('Failed to update role:', error);
+      alert('Failed to update user');
+    }
+  };
+
+  const deleteUser = async (userId: string) => {
+    if (!confirm('Delete this user? This cannot be undone.')) return;
+    try {
+      const { error } = await supabase.from('profiles').delete().eq('id', userId);
+      if (error) throw error;
+      setUsers(users.filter(u => u.id !== userId));
+    } catch (error) {
+      alert('Failed to delete user');
+    }
+  };
+
+  const addUser = async () => {
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: newUser.email,
+        password: newUser.password,
+        options: { data: { full_name: newUser.full_name } }
+      });
+      if (authError) throw authError;
+      
+      if (authData.user) {
+        await supabase.from('profiles').update({
+          full_name: newUser.full_name,
+          phone: newUser.phone || null,
+          role: newUser.role
+        }).eq('id', authData.user.id);
+      }
+      
+      await loadUsers();
+      setShowAddModal(false);
+      setNewUser({ email: '', password: '', full_name: '', phone: '', role: 'basic_member' });
+    } catch (error: any) {
+      alert(error.message);
     }
   };
 
@@ -80,13 +123,10 @@ export function AdminUsersPage() {
 
   const filteredUsers = users.filter(user =>
     user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.membership_number?.toLowerCase().includes(searchTerm.toLowerCase())
+    user.phone?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) {
-    return <div className="text-center py-8">Loading users...</div>;
-  }
+  if (loading) return <div className="text-center py-8">Loading users...</div>;
 
   return (
     <div className="space-y-6">
@@ -95,30 +135,33 @@ export function AdminUsersPage() {
           <Users className="h-8 w-8 text-navy" />
           <h1 className="text-3xl font-playfair text-navy">User Management</h1>
         </div>
-        <div className="text-sm text-gray-600">
-          Total: {users.length} | Active: {users.filter(u => u.is_active).length}
-        </div>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-navy text-white rounded-lg hover:bg-navy-600"
+        >
+          <UserPlus className="w-5 h-5" />
+          Add User
+        </button>
       </div>
 
       <div className="bg-white rounded-lg shadow p-4">
         <input
           type="text"
-          placeholder="Search by name, phone, or membership number..."
+          placeholder="Search by name or phone..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full border border-gray-300 rounded-lg px-4 py-2"
         />
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white rounded-lg shadow overflow-x-auto">
         <table className="w-full">
           <thead className="bg-gray-50 border-b">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cell Group</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
             </tr>
           </thead>
@@ -126,85 +169,150 @@ export function AdminUsersPage() {
             {filteredUsers.map((user) => (
               <tr key={user.id} className={!user.is_active ? 'bg-gray-50' : ''}>
                 <td className="px-6 py-4">
-                  <div>
+                  {editingId === user.id ? (
+                    <input
+                      value={editData.full_name}
+                      onChange={(e) => setEditData({...editData, full_name: e.target.value})}
+                      className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
+                    />
+                  ) : (
                     <div className="font-medium text-gray-900">{user.full_name}</div>
-                    {user.membership_number && (
-                      <div className="text-sm text-gray-500">#{user.membership_number}</div>
-                    )}
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-600">
-                  {user.phone || 'N/A'}
+                  )}
                 </td>
                 <td className="px-6 py-4">
                   {editingId === user.id ? (
-                    <div className="flex items-center gap-2">
-                      <select
-                        value={editRole}
-                        onChange={(e) => setEditRole(e.target.value)}
-                        className="border border-gray-300 rounded px-2 py-1 text-sm"
-                      >
-                        <option value="basic_member">Basic Member</option>
-                        <option value="leader">Leader</option>
-                        <option value="clergy">Clergy</option>
-                        <option value="admin">Admin</option>
-                      </select>
-                      <button
-                        onClick={() => updateRole(user.id, editRole)}
-                        className="text-green-600 hover:text-green-700"
-                      >
-                        <Save className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => setEditingId(null)}
-                        className="text-gray-600 hover:text-gray-700"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
+                    <input
+                      value={editData.phone}
+                      onChange={(e) => setEditData({...editData, phone: e.target.value})}
+                      className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
+                    />
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleBadgeColor(user.role)}`}>
-                        {user.role.replace('_', ' ')}
-                      </span>
-                      <button
-                        onClick={() => {
-                          setEditingId(user.id);
-                          setEditRole(user.role);
-                        }}
-                        className="text-blue-600 hover:text-blue-700"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </button>
-                    </div>
+                    <span className="text-sm text-gray-600">{user.phone || 'N/A'}</span>
                   )}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-600">
-                  {user.cell_group || 'N/A'}
+                <td className="px-6 py-4">
+                  {editingId === user.id ? (
+                    <select
+                      value={editData.role}
+                      onChange={(e) => setEditData({...editData, role: e.target.value})}
+                      className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    >
+                      <option value="basic_member">Basic Member</option>
+                      <option value="leader">Leader</option>
+                      <option value="clergy">Clergy</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  ) : (
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleBadgeColor(user.role)}`}>
+                      {user.role.replace('_', ' ')}
+                    </span>
+                  )}
                 </td>
                 <td className="px-6 py-4">
-                  <button
-                    onClick={() => toggleActive(user.id, user.is_active)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      user.is_active
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}
-                  >
-                    {user.is_active ? 'Active' : 'Inactive'}
-                  </button>
+                  {editingId === user.id ? (
+                    <input
+                      value={editData.cell_group}
+                      onChange={(e) => setEditData({...editData, cell_group: e.target.value})}
+                      className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
+                    />
+                  ) : (
+                    <span className="text-sm text-gray-600">{user.cell_group || 'N/A'}</span>
+                  )}
                 </td>
                 <td className="px-6 py-4">
-                  <button className="text-navy hover:text-navy-600 flex items-center gap-1 text-sm">
-                    <Shield className="h-4 w-4" />
-                    View Details
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {editingId === user.id ? (
+                      <>
+                        <button onClick={() => updateUser(user.id)} className="text-green-600 hover:text-green-700">
+                          <Save className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => setEditingId(null)} className="text-gray-600 hover:text-gray-700">
+                          <X className="h-4 w-4" />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => {
+                            setEditingId(user.id);
+                            setEditData({ role: user.role, full_name: user.full_name, phone: user.phone || '', cell_group: user.cell_group || '' });
+                          }}
+                          className="text-blue-600 hover:text-blue-700"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => toggleActive(user.id, user.is_active)}
+                          className={`px-2 py-1 rounded text-xs ${user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+                        >
+                          {user.is_active ? 'Active' : 'Inactive'}
+                        </button>
+                        <button onClick={() => deleteUser(user.id)} className="text-red-600 hover:text-red-700">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-semibold mb-4">Add New User</h2>
+            <div className="space-y-4">
+              <input
+                placeholder="Full Name"
+                value={newUser.full_name}
+                onChange={(e) => setNewUser({...newUser, full_name: e.target.value})}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+              />
+              <input
+                placeholder="Email"
+                type="email"
+                value={newUser.email}
+                onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+              />
+              <input
+                placeholder="Password"
+                type="password"
+                value={newUser.password}
+                onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+              />
+              <input
+                placeholder="Phone (optional)"
+                value={newUser.phone}
+                onChange={(e) => setNewUser({...newUser, phone: e.target.value})}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+              />
+              <select
+                value={newUser.role}
+                onChange={(e) => setNewUser({...newUser, role: e.target.value})}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+              >
+                <option value="basic_member">Basic Member</option>
+                <option value="leader">Leader</option>
+                <option value="clergy">Clergy</option>
+                <option value="admin">Admin</option>
+              </select>
+              <div className="flex gap-2">
+                <button onClick={addUser} className="flex-1 bg-navy text-white py-2 rounded hover:bg-navy-600">
+                  Add User
+                </button>
+                <button onClick={() => setShowAddModal(false)} className="flex-1 bg-gray-200 py-2 rounded hover:bg-gray-300">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
