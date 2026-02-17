@@ -1,4 +1,5 @@
 import { BibleVersion, BibleBook, BibleChapter } from '@/types/bible'
+import { supabase } from '@/lib/supabase'
 
 const API_KEY = import.meta.env.VITE_API_BIBLE_KEY
 const BASE_URL = 'https://rest.api.bible/v1'
@@ -39,7 +40,32 @@ export const bibleService = {
   },
 
   getChapter: async (version: BibleVersion, chapterId: string): Promise<BibleChapter> => {
-    return bibleRequest(`/bibles/${VERSION_IDS[version]}/chapters/${chapterId}?content-type=html&include-notes=false&include-titles=true`)
+    // Try cache first
+    const { data: cached } = await supabase
+      .from('bible_cache')
+      .select('*')
+      .eq('version', version)
+      .eq('chapter_id', chapterId)
+      .single();
+
+    if (cached) {
+      return { content: cached.content, reference: cached.reference };
+    }
+
+    // Fetch from API
+    const chapter = await bibleRequest<BibleChapter>(
+      `/bibles/${VERSION_IDS[version]}/chapters/${chapterId}?content-type=html&include-notes=false&include-titles=true`
+    );
+
+    // Cache it
+    await supabase.from('bible_cache').insert({
+      version,
+      chapter_id: chapterId,
+      content: chapter.content,
+      reference: chapter.reference
+    }).catch(() => {}); // Ignore cache errors
+
+    return chapter;
   },
 
   search: async (version: BibleVersion, query: string) => {
