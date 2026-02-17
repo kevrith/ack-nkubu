@@ -1,0 +1,19 @@
+{
+  "name": "ack-parish-android",
+  "version": "1.0.0",
+  "scripts": {
+    "android:init": "bubblewrap init --manifest https://your-domain.com/manifest.json",
+    "android:build": "bubblewrap build",
+    "android:update": "bubblewrap update",
+    "capacitor:init": "cap init",
+    "capacitor:add": "cap add android",
+    "capacitor:sync": "cap sync",
+    "capacitor:open": "cap open android"
+  },
+  "devDependencies": {
+    "@bubblewrap/cli": "^1.20.0",
+    "@capacitor/cli": "^5.0.0",
+    "@capacitor/core": "^5.0.0",
+    "@capacitor/android": "^5.0.0"
+  }
+}
