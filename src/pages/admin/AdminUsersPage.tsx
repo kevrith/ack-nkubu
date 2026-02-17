@@ -20,6 +20,8 @@ export function AdminUsersPage() {
   const [editData, setEditData] = useState({ role: '', full_name: '', phone: '', cell_group: '' });
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
   const [newUser, setNewUser] = useState({ email: '', password: '', full_name: '', phone: '', role: 'basic_member' });
 
   useEffect(() => {
@@ -62,13 +64,16 @@ export function AdminUsersPage() {
     }
   };
 
-  const deleteUser = async (userId: string) => {
-    if (!confirm('Delete this user? This cannot be undone.')) return;
+  const deleteUser = async () => {
+    if (!userToDelete) return;
     try {
-      const { error } = await supabase.from('profiles').delete().eq('id', userId);
+      const { error } = await supabase.from('profiles').delete().eq('id', userToDelete);
       if (error) throw error;
-      setUsers(users.filter(u => u.id !== userId));
+      setUsers(users.filter(u => u.id !== userToDelete));
+      setShowDeleteModal(false);
+      setUserToDelete(null);
     } catch (error) {
+      console.error('Delete error:', error);
       alert('Failed to delete user');
     }
   };
@@ -247,7 +252,7 @@ export function AdminUsersPage() {
                         >
                           {user.is_active ? 'Active' : 'Inactive'}
                         </button>
-                        <button onClick={() => deleteUser(user.id)} className="text-red-600 hover:text-red-700">
+                        <button onClick={() => { setUserToDelete(user.id); setShowDeleteModal(true); }} className="text-red-600 hover:text-red-700">
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </>
@@ -259,6 +264,23 @@ export function AdminUsersPage() {
           </tbody>
         </table>
       </div>
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-semibold mb-4 text-red-600">Delete User</h2>
+            <p className="mb-6">Are you sure you want to delete this user? This action cannot be undone.</p>
+            <div className="flex gap-2">
+              <button onClick={deleteUser} className="flex-1 bg-red-600 text-white py-2 rounded hover:bg-red-700">
+                Delete
+              </button>
+              <button onClick={() => { setShowDeleteModal(false); setUserToDelete(null); }} className="flex-1 bg-gray-200 py-2 rounded hover:bg-gray-300">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
