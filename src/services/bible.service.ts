@@ -49,7 +49,12 @@ export const bibleService = {
       .single();
 
     if (cached) {
-      return { content: cached.content, reference: cached.reference };
+      return { 
+        id: cached.chapter_id,
+        number: cached.chapter_id,
+        content: cached.content, 
+        reference: cached.reference 
+      };
     }
 
     // Fetch from API
@@ -57,13 +62,13 @@ export const bibleService = {
       `/bibles/${VERSION_IDS[version]}/chapters/${chapterId}?content-type=html&include-notes=false&include-titles=true`
     );
 
-    // Cache it
-    await supabase.from('bible_cache').insert({
+    // Cache it (ignore errors)
+    supabase.from('bible_cache').insert({
       version,
       chapter_id: chapterId,
       content: chapter.content,
       reference: chapter.reference
-    }).catch(() => {}); // Ignore cache errors
+    }).then(() => {}).catch(() => {});
 
     return chapter;
   },
