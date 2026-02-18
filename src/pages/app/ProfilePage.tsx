@@ -11,8 +11,6 @@ const versionInfo: Record<BibleVersion, string> = {
   NIV: 'New International Version',
   NLT: 'New Living Translation',
   KJV: 'King James Version',
-  NRSV: 'New Revised Standard Version',
-  NKJV: 'New King James Version',
 }
 
 export function ProfilePage() {

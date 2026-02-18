@@ -6,8 +6,6 @@ const versionInfo: Record<BibleVersion, { label: string; description: string }> 
   NIV: { label: 'NIV', description: 'New International Version' },
   NLT: { label: 'NLT', description: 'New Living Translation' },
   KJV: { label: 'KJV', description: 'King James Version' },
-  NRSV: { label: 'NRSV', description: 'New Revised Standard Version' },
-  NKJV: { label: 'NKJV', description: 'New King James Version' },
 }
 
 export function VersionSelector() {
