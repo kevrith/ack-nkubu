@@ -50,7 +50,7 @@ export function DesktopLanding() {
   return (
     <div className="min-h-screen">
       {/* Hero Section with Church Image */}
-      <div className="relative h-screen">
+      <div className="relative min-h-screen">
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{
@@ -60,24 +60,24 @@ export function DesktopLanding() {
           }}
         ></div>
 
-        <nav className="relative z-10 container mx-auto px-6 py-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/MERU.png" alt="Logo" className="w-12 h-12 rounded-full" />
-            <span className="text-2xl font-playfair text-white">{settings.church_name}</span>
+        <nav className="relative z-20 container mx-auto px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <img src="/MERU.png" alt="Logo" className="w-10 h-10 sm:w-12 sm:h-12 rounded-full" />
+            <span className="text-base sm:text-xl md:text-2xl font-playfair text-white font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] truncate max-w-[150px] sm:max-w-none">{settings.church_name}</span>
           </div>
-          <div className="flex gap-4">
-            <Link to="/login" className="px-6 py-2 text-white hover:text-gold transition">Sign In</Link>
-            <Link to="/register" className="px-6 py-2 bg-gold text-navy font-semibold rounded-lg hover:bg-gold-600">Join Us</Link>
+          <div className="flex gap-2 sm:gap-4">
+            <Link to="/login" className="px-3 py-2 sm:px-6 sm:py-2 text-xs sm:text-base text-white bg-navy backdrop-blur-sm rounded-lg hover:bg-navy-600 transition">Sign In</Link>
+            <Link to="/register" className="px-3 py-2 sm:px-6 sm:py-2 text-xs sm:text-base bg-gold text-navy font-semibold rounded-lg hover:bg-gold-600">Join Us</Link>
           </div>
         </nav>
 
-        <div className="relative z-10 container mx-auto px-6 h-[calc(100vh-100px)] flex items-center">
-          <div className="max-w-3xl bg-white/30 p-8 rounded-2xl">
-            <h1 className="text-7xl font-playfair text-navy mb-6 leading-tight">Welcome to<br />{settings.church_name}</h1>
+        <div className="relative z-10 container mx-auto px-4 sm:px-6 flex items-center" style={{ minHeight: 'calc(100vh - 80px)' }}>
+          <div className="max-w-3xl bg-cream/40 p-4 sm:p-6 md:p-8 rounded-xl">
+            <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-playfair font-semibold text-navy mb-4 sm:mb-6 leading-tight drop-shadow-lg">Welcome to<br />{settings.church_name}</h1>
             <p className="text-2xl text-white font-semibold mb-8 leading-relaxed drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">A community of faith, hope, and love. Join us in worship, fellowship, and service.</p>
-            <div className="flex gap-4">
-              <Link to="/register" className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-800 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-blue-900 text-lg shadow-lg">Become a Member</Link>
-              <Link to="/bible" className="px-8 py-4 bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-semibold rounded-lg hover:from-teal-600 hover:to-cyan-700 text-lg shadow-lg">Explore Resources</Link>
+            <div className="flex flex-col xs:flex-row gap-3 sm:gap-4">
+              <Link to="/register" className="text-center px-4 py-3 sm:px-6 sm:py-3 md:px-8 md:py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg text-sm sm:text-base md:text-lg transition-all">Become a Member</Link>
+              <Link to="/bible" className="text-center px-4 py-3 sm:px-6 sm:py-3 md:px-8 md:py-4 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold rounded-lg hover:from-teal-600 hover:to-teal-700 shadow-lg text-sm sm:text-base md:text-lg transition-all">Explore Resources</Link>
             </div>
           </div>
         </div>

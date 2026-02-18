@@ -10,7 +10,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-cream">
       <Header />
       {user && <DesktopSidebar />}
-      <main className={`${user ? 'md:ml-64' : ''} pt-4 pb-24 md:pb-8 px-4 max-w-5xl mx-auto`}>
+      <main className={`${
+        user ? 'md:ml-64' : ''
+      } pt-2 sm:pt-4 pb-20 sm:pb-24 md:pb-8 px-3 sm:px-4 md:px-6 max-w-5xl mx-auto min-h-[calc(100vh-4rem)]`}>
         {children}
       </main>
       {user && <MobileNav />}
