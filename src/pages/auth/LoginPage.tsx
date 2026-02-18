@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
-import { Cross, Eye, EyeOff } from 'lucide-react'
+import { Cross, Eye, EyeOff, ArrowLeft } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export function LoginPage() {
@@ -30,6 +30,10 @@ export function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-navy-900 via-navy-700 to-navy-600 px-4">
+      <Link to="/" className="absolute top-4 left-4 flex items-center gap-2 text-white hover:text-gold transition-colors">
+        <ArrowLeft className="w-5 h-5" />
+        <span>Back to Home</span>
+      </Link>
       <div className="w-full max-w-md">
         <div className="bg-white rounded-lg shadow-2xl p-8">
           <div className="flex flex-col items-center mb-8">
