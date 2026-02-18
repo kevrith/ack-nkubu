@@ -19,9 +19,10 @@ export function ProfilePage() {
   const [fullName, setFullName] = useState(user?.profile.full_name || '')
   const [phone, setPhone] = useState(user?.profile.phone || '')
   const [cellGroup, setCellGroup] = useState(user?.profile.cell_group || '')
-  const [preferredBibleVersion, setPreferredBibleVersion] = useState<BibleVersion>(
-    user?.profile.preferred_bible_version || 'KJV'
-  )
+  const [preferredBibleVersion, setPreferredBibleVersion] = useState<BibleVersion>(() => {
+    const saved = user?.profile.preferred_bible_version
+    return AVAILABLE_VERSIONS.includes(saved as BibleVersion) ? (saved as BibleVersion) : 'NIV'
+  })
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [showUploader, setShowUploader] = useState(false)
