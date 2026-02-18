@@ -68,7 +68,7 @@ export const bibleService = {
       chapter_id: chapterId,
       content: chapter.content,
       reference: chapter.reference
-    }).then(() => {}).catch(() => {});
+    }).then(() => {}, () => {});
 
     return chapter;
   },
