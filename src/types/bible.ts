@@ -1,4 +1,4 @@
-export type BibleVersion = 'NIV' | 'NLT' | 'KJV' | 'NRSV' | 'NKJV'
+export type BibleVersion = 'NIV' | 'NLT' | 'KJV'
 
 export interface BibleBook {
   id: string

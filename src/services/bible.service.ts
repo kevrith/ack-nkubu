@@ -8,11 +8,9 @@ const VERSION_IDS: Record<BibleVersion, string> = {
   NIV: 'de4e12af7f28f599-01',
   NLT: '65eec8e0b60e656b-01',
   KJV: 'de4e12af7f28f599-02',
-  NRSV: 'bba9f40183526463-01',
-  NKJV: '9879dbb7cfe39e4d-04',
 }
 
-export const AVAILABLE_VERSIONS: BibleVersion[] = ['NIV', 'NLT', 'KJV', 'NRSV', 'NKJV']
+export const AVAILABLE_VERSIONS: BibleVersion[] = ['NIV', 'NLT', 'KJV']
 
 async function bibleRequest<T>(endpoint: string): Promise<T> {
   if (!API_KEY || API_KEY === 'your-api-bible-key') {

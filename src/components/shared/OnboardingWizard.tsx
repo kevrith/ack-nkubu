@@ -4,14 +4,12 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { BibleVersion } from '@/types/bible'
 
-const BIBLE_VERSIONS: BibleVersion[] = ['NIV', 'NLT', 'KJV', 'NRSV', 'NKJV']
+const BIBLE_VERSIONS: BibleVersion[] = ['NIV', 'NLT', 'KJV']
 
 const VERSION_DESC: Record<BibleVersion, string> = {
   NIV:  'New International Version — clear, modern English',
   NLT:  'New Living Translation — easy to read and understand',
   KJV:  'King James Version — traditional, poetic language',
-  NRSV: 'New Revised Standard Version — scholarly & accurate',
-  NKJV: 'New King James Version — modern update of KJV',
 }
 
 const CELL_GROUPS = [
