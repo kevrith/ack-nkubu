@@ -54,12 +54,11 @@ export function DesktopLanding() {
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: 'url(/aa.png)',
-            backgroundPosition: 'center'
+            backgroundImage: 'url(/aa.jpg)',
+            backgroundPosition: 'center',
+            backgroundSize: 'cover'
           }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-navy/95 via-navy/80 to-navy/60"></div>
-        </div>
+        ></div>
 
         <nav className="relative z-10 container mx-auto px-6 py-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -73,12 +72,12 @@ export function DesktopLanding() {
         </nav>
 
         <div className="relative z-10 container mx-auto px-6 h-[calc(100vh-100px)] flex items-center">
-          <div className="max-w-3xl">
-            <h1 className="text-7xl font-playfair text-white mb-6 leading-tight">Welcome to<br />{settings.church_name}</h1>
-            <p className="text-2xl text-white/90 mb-8 leading-relaxed">A community of faith, hope, and love. Join us in worship, fellowship, and service.</p>
+          <div className="max-w-3xl bg-white/30 p-8 rounded-2xl">
+            <h1 className="text-7xl font-playfair text-navy mb-6 leading-tight">Welcome to<br />{settings.church_name}</h1>
+            <p className="text-2xl text-white font-semibold mb-8 leading-relaxed drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">A community of faith, hope, and love. Join us in worship, fellowship, and service.</p>
             <div className="flex gap-4">
-              <Link to="/register" className="px-8 py-4 bg-gold text-navy font-semibold rounded-lg hover:bg-gold-600 text-lg">Become a Member</Link>
-              <Link to="/bible" className="px-8 py-4 bg-white/10 backdrop-blur text-white font-semibold rounded-lg hover:bg-white/20 text-lg">Explore Resources</Link>
+              <Link to="/register" className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-800 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-blue-900 text-lg shadow-lg">Become a Member</Link>
+              <Link to="/bible" className="px-8 py-4 bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-semibold rounded-lg hover:from-teal-600 hover:to-cyan-700 text-lg shadow-lg">Explore Resources</Link>
             </div>
           </div>
         </div>

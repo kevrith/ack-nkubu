@@ -16,7 +16,4 @@ export function LandingPage() {
 
   // Force desktop for testing - remove this line later
   return <DesktopLanding />
-  
-  // Uncomment this for responsive behavior:
-  // return isMobile ? <MobileLanding /> : <DesktopLanding />
 }

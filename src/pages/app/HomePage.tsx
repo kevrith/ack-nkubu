@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
-import { BookOpen, HandHeart, Heart, Users, Calendar, Bell } from 'lucide-react'
+import { BookOpen, HandHeart, Heart, Users, Calendar, Bell, Book } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 
@@ -85,6 +85,10 @@ export function HomePage() {
           <Link to="/community" className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow text-center">
             <Users className="w-8 h-8 text-navy mx-auto mb-2" />
             <span className="text-sm font-medium">Community</span>
+          </Link>
+          <Link to="/bcp" className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow text-center">
+            <Book className="w-8 h-8 text-navy mx-auto mb-2" />
+            <span className="text-sm font-medium">BCP</span>
           </Link>
         </div>
       </div>

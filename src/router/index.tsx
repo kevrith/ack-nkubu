@@ -30,6 +30,8 @@ import { ScheduledContent } from '@/pages/admin/ScheduledContent'
 import { PageEditor } from '@/pages/admin/PageEditor'
 import { FormBuilder } from '@/pages/admin/FormBuilder'
 import { MorePage } from '@/pages/app/PlaceholderPages'
+import { GivingReportsPage } from '@/pages/admin/GivingReportsPage'
+import { BCPPage } from '@/pages/app/BCPPage'
 
 export function AppRouter() {
   return (
@@ -194,7 +196,21 @@ export function AppRouter() {
             </RoleGuard>
           </ProtectedRoute>
         } />
+
+        <Route path="/admin/giving-reports" element={
+          <ProtectedRoute>
+            <RoleGuard requiredRole="admin">
+              <AppLayout><GivingReportsPage /></AppLayout>
+            </RoleGuard>
+          </ProtectedRoute>
+        } />
         
+        <Route path="/bcp" element={
+          <ProtectedRoute>
+            <AppLayout><BCPPage /></AppLayout>
+          </ProtectedRoute>
+        } />
+
         <Route path="/more" element={
           <ProtectedRoute>
             <AppLayout><MorePage /></AppLayout>

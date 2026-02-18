@@ -1,10 +1,11 @@
-import { Home, BookOpen, Mic, Heart, MoreHorizontal } from 'lucide-react'
+import { Home, BookOpen, Mic, Heart, Book, MoreHorizontal } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 
 const navItems = [
   { icon: Home, label: 'Home', path: '/home' },
   { icon: BookOpen, label: 'Bible', path: '/bible' },
+  { icon: Book, label: 'BCP', path: '/bcp' },
   { icon: Mic, label: 'Sermons', path: '/sermons' },
   { icon: Heart, label: 'Give', path: '/giving' },
   { icon: MoreHorizontal, label: 'More', path: '/more' },

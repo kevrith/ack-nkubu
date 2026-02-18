@@ -1,14 +1,15 @@
 import { useState } from 'react'
-import { BookOpen, Search as SearchIcon, Bookmark, Calendar } from 'lucide-react'
+import { BookOpen, Search as SearchIcon, Bookmark, Calendar, GitCompare } from 'lucide-react'
 import { VersionSelector } from '@/components/bible/VersionSelector'
 import { BookNavigator } from '@/components/bible/BookNavigator'
 import { ChapterView } from '@/components/bible/ChapterView'
 import { BibleSearch } from '@/components/bible/BibleSearch'
 import { BibleBookmarks } from '@/components/bible/BibleBookmarks'
 import { ReadingPlans } from '@/components/bible/ReadingPlans'
+import { BibleComparison } from '@/components/bible/BibleComparison'
 
 export function BiblePage() {
-  const [view, setView] = useState<'read' | 'search' | 'bookmarks' | 'plans'>('read')
+  const [view, setView] = useState<'read' | 'search' | 'bookmarks' | 'plans' | 'compare'>('read')
 
   return (
     <div className="space-y-4">
@@ -54,6 +55,15 @@ export function BiblePage() {
           <Calendar className="w-4 h-4" />
           Reading Plans
         </button>
+        <button
+          onClick={() => setView('compare')}
+          className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
+            view === 'compare' ? 'border-navy text-navy' : 'border-transparent text-gray-500'
+          }`}
+        >
+          <GitCompare className="w-4 h-4" />
+          Compare
+        </button>
       </div>
 
       {view === 'read' ? (
@@ -73,6 +83,8 @@ export function BiblePage() {
         <div className="bg-white rounded-lg shadow p-6">
           <BibleBookmarks />
         </div>
+      ) : view === 'compare' ? (
+        <BibleComparison />
       ) : (
         <div className="bg-white rounded-lg shadow p-6">
           <ReadingPlans />

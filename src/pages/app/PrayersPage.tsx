@@ -1,12 +1,13 @@
 import { useState } from 'react'
-import { BookOpen, HandHeart, Calendar, Plus } from 'lucide-react'
+import { BookOpen, HandHeart, Calendar, Church, Plus, Download } from 'lucide-react'
 import { DailyPrayer } from '@/components/prayers/DailyPrayer'
 import { PrayerLibrary } from '@/components/prayers/PrayerLibrary'
 import { PrayerWall } from '@/components/prayers/PrayerWall'
 import { PrayerRequestForm } from '@/components/prayers/PrayerRequestForm'
+import { LiturgicalCalendar } from '@/components/prayers/LiturgicalCalendar'
 
 export function PrayersPage() {
-  const [view, setView] = useState<'daily' | 'library' | 'requests'>('daily')
+  const [view, setView] = useState<'daily' | 'library' | 'calendar' | 'requests'>('daily')
   const [showRequestForm, setShowRequestForm] = useState(false)
 
   return (
@@ -24,10 +25,10 @@ export function PrayersPage() {
         )}
       </div>
 
-      <div className="flex gap-2 border-b border-gray-200">
+      <div className="flex gap-2 border-b border-gray-200 overflow-x-auto">
         <button
           onClick={() => setView('daily')}
-          className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors whitespace-nowrap ${
             view === 'daily' ? 'border-navy text-navy' : 'border-transparent text-gray-500'
           }`}
         >
@@ -36,7 +37,7 @@ export function PrayersPage() {
         </button>
         <button
           onClick={() => setView('library')}
-          className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors whitespace-nowrap ${
             view === 'library' ? 'border-navy text-navy' : 'border-transparent text-gray-500'
           }`}
         >
@@ -44,8 +45,17 @@ export function PrayersPage() {
           Prayer Library
         </button>
         <button
+          onClick={() => setView('calendar')}
+          className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors whitespace-nowrap ${
+            view === 'calendar' ? 'border-navy text-navy' : 'border-transparent text-gray-500'
+          }`}
+        >
+          <Church className="w-4 h-4" />
+          Liturgical Calendar
+        </button>
+        <button
           onClick={() => setView('requests')}
-          className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors whitespace-nowrap ${
             view === 'requests' ? 'border-navy text-navy' : 'border-transparent text-gray-500'
           }`}
         >
@@ -56,7 +66,29 @@ export function PrayersPage() {
 
       <div>
         {view === 'daily' && <DailyPrayer />}
-        {view === 'library' && <PrayerLibrary />}
+        {view === 'library' && (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg p-6 shadow-lg">
+              <div className="flex items-center gap-4">
+                <Download className="w-12 h-12" />
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold mb-2">Download Book of Common Prayer App</h3>
+                  <p className="text-blue-100 mb-4">Get the full Anglican liturgy on your phone - works offline!</p>
+                  <a
+                    href="/bcp.apk"
+                    download
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-700 font-semibold rounded-lg hover:bg-blue-50 transition-colors"
+                  >
+                    <Download className="w-5 h-5" />
+                    Download APK
+                  </a>
+                </div>
+              </div>
+            </div>
+            <PrayerLibrary />
+          </div>
+        )}
+        {view === 'calendar' && <LiturgicalCalendar />}
         {view === 'requests' && (
           <div className="space-y-6">
             {showRequestForm && (
