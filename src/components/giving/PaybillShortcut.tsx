@@ -37,8 +37,17 @@ export function PaybillShortcut() {
 
   const openMpesaUSSD = () => {
     if (!paybill) return
-    const ussd = `tel:*334*${paybill.paybill_number}*${paybill.account_number}#`
-    window.location.href = ussd
+    // Try to open M-Pesa app first (Android intent), fallback to USSD
+    const mpesaIntent = `intent://mpesa#Intent;scheme=mpesa;package=com.safaricom.mpesa;end`
+    const ussd = `tel:*334#`
+    
+    // Try M-Pesa app intent (works on Android)
+    window.location.href = mpesaIntent
+    
+    // Fallback to USSD after short delay if app doesn't open
+    setTimeout(() => {
+      window.location.href = ussd
+    }, 1000)
   }
 
   return (
@@ -76,17 +85,26 @@ export function PaybillShortcut() {
         </div>
       </div>
 
-      <button
-        onClick={openMpesaUSSD}
-        className="w-full bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 flex items-center justify-center gap-2"
-      >
-        <Smartphone className="w-5 h-5" />
-        Open M-Pesa
-      </button>
-
-      <p className="text-xs text-gray-600 text-center">
-        Tap to open M-Pesa with pre-filled paybill details
-      </p>
+      <div className="space-y-2">
+        <button
+          onClick={openMpesaUSSD}
+          className="w-full bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 flex items-center justify-center gap-2"
+        >
+          <Smartphone className="w-5 h-5" />
+          Open M-Pesa App
+        </button>
+        
+        <div className="text-xs text-gray-600 bg-blue-50 border border-blue-200 rounded p-3">
+          <p className="font-medium text-blue-800 mb-1">📱 Quick Steps:</p>
+          <ol className="list-decimal list-inside space-y-1 text-blue-700">
+            <li>Tap "Open M-Pesa App" above</li>
+            <li>Select "Lipa na M-Pesa" → "Paybill"</li>
+            <li>Copy paybill number: <span className="font-mono font-bold">{paybill.paybill_number}</span></li>
+            <li>Copy account: <span className="font-mono font-bold">{paybill.account_number}</span></li>
+            <li>Enter amount and complete</li>
+          </ol>
+        </div>
+      </div>
     </div>
   )
 }
