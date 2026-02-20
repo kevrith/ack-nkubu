@@ -127,11 +127,11 @@ export function GivingForm() {
           <div className="w-full border-t border-gray-300"></div>
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-white text-gray-500">Or pay via STK Push</span>
+          <span className="px-2 bg-white text-gray-500">STK Push - Under Construction 🚧</span>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6 opacity-50 pointer-events-none">
       {success && (
         <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
           ✓ Thank you for your giving! Your transaction was successful.
@@ -221,14 +221,14 @@ export function GivingForm() {
 
       <button
         type="submit"
-        disabled={loading || !normalizedPhone}
-        className="w-full px-6 py-3 bg-gold text-navy rounded-lg hover:bg-gold-600 disabled:opacity-50 font-medium"
+        disabled={true}
+        className="w-full px-6 py-3 bg-gray-400 text-gray-600 rounded-lg cursor-not-allowed font-medium"
       >
-        {loading ? 'Processing...' : `Give ${amount ? formatKES(parseFloat(amount)) : ''}`}
+        STK Push Coming Soon
       </button>
 
       <p className="text-xs text-gray-500 text-center">
-        Secure M-Pesa payment. You will receive a prompt on your phone.
+        STK Push feature is under construction. Please use the paybill option above.
       </p>
     </form>
     </div>
