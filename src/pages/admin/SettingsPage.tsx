@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Settings, Save } from 'lucide-react';
+import { Settings, Save, Smartphone } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export function SettingsPage() {
   const [churchName, setChurchName] = useState('ACK St Francis Nkubu');
@@ -118,6 +119,17 @@ export function SettingsPage() {
               />
             </div>
           </div>
+        </div>
+
+        <div className="border-t pt-6">
+          <h2 className="text-xl font-semibold text-navy mb-4">M-Pesa Paybill</h2>
+          <Link
+            to="/admin/paybill-settings"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          >
+            <Smartphone className="w-5 h-5" />
+            Configure Paybill Settings
+          </Link>
         </div>
 
         <div className="border-t pt-6">

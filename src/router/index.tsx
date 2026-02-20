@@ -39,6 +39,7 @@ import { AdminCellGroupsPage } from '@/pages/admin/AdminCellGroupsPage'
 import { MinistriesPage } from '@/pages/app/MinistriesPage'
 import { AdminMinistriesPage } from '@/pages/admin/AdminMinistriesPage'
 import { ClergyDashboard } from '@/pages/admin/ClergyDashboard'
+import { PaybillSettingsPage } from '@/pages/admin/PaybillSettingsPage'
 import { SacramentsPage } from '@/pages/app/SacramentsPage'
 import { SacramentRequestPage } from '@/pages/app/SacramentRequestPage'
 import { ClergySacramentsDashboard } from '@/pages/admin/ClergySacramentsDashboard'
@@ -176,6 +177,14 @@ export function AppRouter() {
           <ProtectedRoute>
             <RoleGuard requiredRole="admin">
               <AppLayout><SettingsPage /></AppLayout>
+            </RoleGuard>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/admin/paybill-settings" element={
+          <ProtectedRoute>
+            <RoleGuard requiredRole="admin">
+              <AppLayout><PaybillSettingsPage /></AppLayout>
             </RoleGuard>
           </ProtectedRoute>
         } />
