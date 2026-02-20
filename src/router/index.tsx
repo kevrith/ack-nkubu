@@ -41,13 +41,6 @@ import { AdminMinistriesPage } from '@/pages/admin/AdminMinistriesPage'
 import { ClergyDashboard } from '@/pages/admin/ClergyDashboard'
 import { PaybillSettingsPage } from '@/pages/admin/PaybillSettingsPage'
 import { SacramentsPage } from '@/pages/app/SacramentsPage'
-import { SacramentRequestPage } from '@/pages/app/SacramentRequestPage'
-import { ClergySacramentsDashboard } from '@/pages/admin/ClergySacramentsDashboard'
-import { PledgesPage } from '@/pages/app/PledgesPage'
-import { MakePledgePage } from '@/pages/app/MakePledgePage'
-import { AdminPledgesPage } from '@/pages/admin/AdminPledgesPage'
-import { ReferralPage } from '@/pages/app/ReferralPage'
-import { PaybillSettingsPage } from '@/pages/admin/PaybillSettingsPage'
 
 export function AppRouter() {
   return (
@@ -189,14 +182,6 @@ export function AppRouter() {
           </ProtectedRoute>
         } />
 
-        <Route path="/admin/paybill" element={
-          <ProtectedRoute>
-            <RoleGuard requiredRole="admin">
-              <AppLayout><PaybillSettingsPage /></AppLayout>
-            </RoleGuard>
-          </ProtectedRoute>
-        } />
-
         <Route path="/admin/notifications" element={
           <ProtectedRoute>
             <RoleGuard requiredRole={['clergy', 'admin']}>
@@ -291,55 +276,9 @@ export function AppRouter() {
           </ProtectedRoute>
         } />
 
-        <Route path="/sacraments" element={
-          <ProtectedRoute>
-            <AppLayout><SacramentsPage /></AppLayout>
-          </ProtectedRoute>
-        } />
-
-        <Route path="/sacraments/new" element={
-          <ProtectedRoute>
-            <AppLayout><SacramentRequestPage /></AppLayout>
-          </ProtectedRoute>
-        } />
-
-        <Route path="/clergy/sacraments" element={
-          <ProtectedRoute>
-            <RoleGuard requiredRole={['clergy', 'admin']}>
-              <AppLayout><ClergySacramentsDashboard /></AppLayout>
-            </RoleGuard>
-          </ProtectedRoute>
-        } />
-
-        <Route path="/pledges" element={
-          <ProtectedRoute>
-            <AppLayout><PledgesPage /></AppLayout>
-          </ProtectedRoute>
-        } />
-
-        <Route path="/pledges/:campaignId" element={
-          <ProtectedRoute>
-            <AppLayout><MakePledgePage /></AppLayout>
-          </ProtectedRoute>
-        } />
-
-        <Route path="/admin/pledges" element={
-          <ProtectedRoute>
-            <RoleGuard requiredRole={['clergy', 'admin']}>
-              <AppLayout><AdminPledgesPage /></AppLayout>
-            </RoleGuard>
-          </ProtectedRoute>
-        } />
-
         <Route path="/more" element={
           <ProtectedRoute>
             <AppLayout><MorePage /></AppLayout>
-          </ProtectedRoute>
-        } />
-
-        <Route path="/referrals" element={
-          <ProtectedRoute>
-            <AppLayout><ReferralPage /></AppLayout>
           </ProtectedRoute>
         } />
         
