@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ChevronRight, ChevronLeft, Check, Church, BookOpen, Bell, Heart } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
@@ -11,11 +11,6 @@ const VERSION_DESC: Record<BibleVersion, string> = {
   NLT:  'New Living Translation — easy to read and understand',
   KJV:  'King James Version — traditional, poetic language',
 }
-
-const CELL_GROUPS = [
-  'Nkubu Central', 'Youth Fellowship', 'Women\'s Guild (Mothers\' Union)',
-  'Men\'s Fellowship', 'Choir', 'Ushers', 'Sunday School', 'Young Adults',
-]
 
 interface Step {
   icon: React.ReactNode
@@ -41,6 +36,20 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   const [selectedGroup, setSelectedGroup] = useState('')
   const [notifEnabled, setNotifEnabled] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [cellGroups, setCellGroups] = useState<string[]>([])
+
+  useEffect(() => {
+    loadCellGroups()
+  }, [])
+
+  async function loadCellGroups() {
+    const { data } = await supabase
+      .from('cell_groups')
+      .select('name')
+      .eq('is_active', true)
+      .order('name')
+    setCellGroups(data?.map(g => g.name) || [])
+  }
 
   const isLast = step === STEPS.length - 1
 
@@ -177,7 +186,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                 >
                   <span className="font-medium text-gray-700">Not in a group yet</span>
                 </button>
-                {CELL_GROUPS.map((g) => (
+                {cellGroups.map((g) => (
                   <button
                     key={g}
                     onClick={() => setSelectedGroup(g)}

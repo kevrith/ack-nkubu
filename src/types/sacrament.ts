@@ -22,14 +22,20 @@ export interface SacramentRequest {
   // Baptism specific
   baptism_candidate_name?: string
   baptism_candidate_dob?: string
-  baptism_parent_names?: string
-  baptism_godparents?: string
+  baptism_father_name?: string
+  baptism_mother_name?: string
+  baptism_godparent1?: string
+  baptism_godparent2?: string
   
   // Wedding specific
   wedding_groom_name?: string
   wedding_groom_dob?: string
+  wedding_groom_father?: string
+  wedding_groom_mother?: string
   wedding_bride_name?: string
   wedding_bride_dob?: string
+  wedding_bride_father?: string
+  wedding_bride_mother?: string
   wedding_preferred_date?: string
   wedding_venue_preference?: string
   

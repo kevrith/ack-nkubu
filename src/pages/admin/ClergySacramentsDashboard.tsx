@@ -65,6 +65,20 @@ export function ClergySacramentsDashboard() {
       action: `Scheduled for ${new Date(date).toLocaleString()}`
     })
 
+    // Create calendar event
+    const request = requests.find(r => r.id === id)
+    if (request) {
+      const eventTitle = `${request.sacrament_type.charAt(0).toUpperCase() + request.sacrament_type.slice(1)} - ${request.full_name}`
+      await supabase.from('events').insert({
+        title: eventTitle,
+        description: `${request.sacrament_type} service for ${request.full_name}`,
+        event_date: date,
+        location: location,
+        event_type: 'sacrament',
+        is_published: true
+      })
+    }
+
     loadRequests()
   }
 
@@ -142,16 +156,26 @@ export function ClergySacramentsDashboard() {
                     <p className="text-gray-900">{selectedRequest.baptism_candidate_name}</p>
                     <p className="text-sm text-gray-600">DOB: {selectedRequest.baptism_candidate_dob}</p>
                   </div>
-                  {selectedRequest.baptism_parent_names && (
+                  {(selectedRequest.baptism_father_name || selectedRequest.baptism_mother_name) && (
                     <div>
                       <label className="text-xs font-semibold text-gray-500 uppercase">Parents</label>
-                      <p className="text-gray-900">{selectedRequest.baptism_parent_names}</p>
+                      {selectedRequest.baptism_father_name && (
+                        <p className="text-gray-900">Father: {selectedRequest.baptism_father_name}</p>
+                      )}
+                      {selectedRequest.baptism_mother_name && (
+                        <p className="text-gray-900">Mother: {selectedRequest.baptism_mother_name}</p>
+                      )}
                     </div>
                   )}
-                  {selectedRequest.baptism_godparents && (
+                  {(selectedRequest.baptism_godparent1 || selectedRequest.baptism_godparent2) && (
                     <div>
                       <label className="text-xs font-semibold text-gray-500 uppercase">Godparents</label>
-                      <p className="text-gray-900">{selectedRequest.baptism_godparents}</p>
+                      {selectedRequest.baptism_godparent1 && (
+                        <p className="text-gray-900">1. {selectedRequest.baptism_godparent1}</p>
+                      )}
+                      {selectedRequest.baptism_godparent2 && (
+                        <p className="text-gray-900">2. {selectedRequest.baptism_godparent2}</p>
+                      )}
                     </div>
                   )}
                 </>
@@ -163,11 +187,31 @@ export function ClergySacramentsDashboard() {
                     <label className="text-xs font-semibold text-gray-500 uppercase">Groom</label>
                     <p className="text-gray-900">{selectedRequest.wedding_groom_name}</p>
                     <p className="text-sm text-gray-600">DOB: {selectedRequest.wedding_groom_dob}</p>
+                    {(selectedRequest.wedding_groom_father || selectedRequest.wedding_groom_mother) && (
+                      <div className="mt-1">
+                        {selectedRequest.wedding_groom_father && (
+                          <p className="text-sm text-gray-600">Father: {selectedRequest.wedding_groom_father}</p>
+                        )}
+                        {selectedRequest.wedding_groom_mother && (
+                          <p className="text-sm text-gray-600">Mother: {selectedRequest.wedding_groom_mother}</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-gray-500 uppercase">Bride</label>
                     <p className="text-gray-900">{selectedRequest.wedding_bride_name}</p>
                     <p className="text-sm text-gray-600">DOB: {selectedRequest.wedding_bride_dob}</p>
+                    {(selectedRequest.wedding_bride_father || selectedRequest.wedding_bride_mother) && (
+                      <div className="mt-1">
+                        {selectedRequest.wedding_bride_father && (
+                          <p className="text-sm text-gray-600">Father: {selectedRequest.wedding_bride_father}</p>
+                        )}
+                        {selectedRequest.wedding_bride_mother && (
+                          <p className="text-sm text-gray-600">Mother: {selectedRequest.wedding_bride_mother}</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                   {selectedRequest.wedding_preferred_date && (
                     <div>
@@ -260,3 +304,5 @@ export function ClergySacramentsDashboard() {
     </div>
   )
 }
+
+export default ClergySacramentsDashboard

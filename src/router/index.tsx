@@ -42,6 +42,9 @@ import { ClergyDashboard } from '@/pages/admin/ClergyDashboard'
 import { SacramentsPage } from '@/pages/app/SacramentsPage'
 import { SacramentRequestPage } from '@/pages/app/SacramentRequestPage'
 import { ClergySacramentsDashboard } from '@/pages/admin/ClergySacramentsDashboard'
+import { PledgesPage } from '@/pages/app/PledgesPage'
+import { MakePledgePage } from '@/pages/app/MakePledgePage'
+import { AdminPledgesPage } from '@/pages/admin/AdminPledgesPage'
 
 export function AppRouter() {
   return (
@@ -285,6 +288,26 @@ export function AppRouter() {
           <ProtectedRoute>
             <RoleGuard requiredRole={['clergy', 'admin']}>
               <AppLayout><ClergySacramentsDashboard /></AppLayout>
+            </RoleGuard>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/pledges" element={
+          <ProtectedRoute>
+            <AppLayout><PledgesPage /></AppLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/pledges/:campaignId" element={
+          <ProtectedRoute>
+            <AppLayout><MakePledgePage /></AppLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/admin/pledges" element={
+          <ProtectedRoute>
+            <RoleGuard requiredRole={['clergy', 'admin']}>
+              <AppLayout><AdminPledgesPage /></AppLayout>
             </RoleGuard>
           </ProtectedRoute>
         } />

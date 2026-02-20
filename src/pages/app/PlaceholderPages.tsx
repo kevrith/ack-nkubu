@@ -1,4 +1,4 @@
-import { Home, BookOpen, HandHeart, Mic, Cross as CrossIcon, Bell, Calendar, Users, Heart, Settings, BookUser, Shield, Plus, UserCog, Image, Send, Clock, FileEdit, FormInput, User, BellRing, MessageCircleHeart, UsersRound, Briefcase } from 'lucide-react'
+import { Home, BookOpen, HandHeart, Mic, Cross as CrossIcon, Bell, Calendar, Users, Heart, Settings, BookUser, Shield, Plus, UserCog, Image, Send, Clock, FileEdit, FormInput, User, BellRing, MessageCircleHeart, UsersRound, Briefcase, Church } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -18,6 +18,7 @@ export function MorePage() {
     { icon: MessageCircleHeart, label: 'Testimonies', path: '/testimonies' },
     { icon: Briefcase, label: 'Ministries', path: '/ministries' },
     { icon: UsersRound, label: 'Cell Groups', path: '/cell-groups' },
+    { icon: Church, label: 'Sacraments', path: '/sacraments' },
     { icon: HandHeart, label: 'Pastoral Care', path: '/pastoral-care' },
     { icon: BellRing, label: 'Notifications', path: '/notifications' },
     { icon: User, label: 'Profile', path: '/profile' },
@@ -38,6 +39,7 @@ export function MorePage() {
     { icon: Send, label: 'Send Notifications', path: '/admin/notifications', adminOnly: true },
     { icon: Settings, label: 'Settings', path: '/admin/settings', adminOnly: true },
     { icon: Shield, label: 'Pastoral Care Dashboard', path: '/clergy/pastoral-care' },
+    { icon: Church, label: 'Sacrament Requests', path: '/clergy/sacraments' },
   ]
 
   const isLeader = ['leader', 'clergy', 'admin'].includes(user?.profile.role || '')

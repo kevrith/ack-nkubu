@@ -1,5 +1,24 @@
--- Sacrament Requests System
+-- Sacrament Requests System (Safe Migration)
 -- =====================================================================
+
+-- Drop existing objects if they exist
+DROP POLICY IF EXISTS "Anyone can create activity" ON sacrament_request_activity;
+DROP POLICY IF EXISTS "Clergy can view all activity" ON sacrament_request_activity;
+DROP POLICY IF EXISTS "Users can view activity for own requests" ON sacrament_request_activity;
+DROP POLICY IF EXISTS "Users can upload documents" ON sacrament_documents;
+DROP POLICY IF EXISTS "Clergy can view all documents" ON sacrament_documents;
+DROP POLICY IF EXISTS "Users can view own documents" ON sacrament_documents;
+DROP POLICY IF EXISTS "Clergy can update requests" ON sacrament_requests;
+DROP POLICY IF EXISTS "Clergy can view all requests" ON sacrament_requests;
+DROP POLICY IF EXISTS "Users can update own pending requests" ON sacrament_requests;
+DROP POLICY IF EXISTS "Users can create requests" ON sacrament_requests;
+DROP POLICY IF EXISTS "Users can view own requests" ON sacrament_requests;
+
+DROP TABLE IF EXISTS sacrament_request_activity CASCADE;
+DROP TABLE IF EXISTS sacrament_documents CASCADE;
+DROP TABLE IF EXISTS sacrament_requests CASCADE;
+DROP TYPE IF EXISTS sacrament_request_status CASCADE;
+DROP TYPE IF EXISTS sacrament_type CASCADE;
 
 -- Sacrament request types enum
 CREATE TYPE sacrament_type AS ENUM ('baptism', 'wedding', 'funeral');

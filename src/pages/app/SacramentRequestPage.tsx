@@ -21,13 +21,19 @@ export function SacramentRequestPage() {
     
     baptism_candidate_name: '',
     baptism_candidate_dob: '',
-    baptism_parent_names: '',
-    baptism_godparents: '',
+    baptism_father_name: '',
+    baptism_mother_name: '',
+    baptism_godparent1: '',
+    baptism_godparent2: '',
     
     wedding_groom_name: '',
     wedding_groom_dob: '',
+    wedding_groom_father: '',
+    wedding_groom_mother: '',
     wedding_bride_name: '',
     wedding_bride_dob: '',
+    wedding_bride_father: '',
+    wedding_bride_mother: '',
     wedding_preferred_date: '',
     wedding_venue_preference: '',
     
@@ -125,7 +131,7 @@ export function SacramentRequestPage() {
               <h3 className="font-semibold text-navy">Baptism Details</h3>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Candidate Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Candidate Name *</label>
                   <input
                     type="text"
                     value={formData.baptism_candidate_name}
@@ -135,7 +141,7 @@ export function SacramentRequestPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth *</label>
                   <input
                     type="date"
                     value={formData.baptism_candidate_dob}
@@ -145,24 +151,47 @@ export function SacramentRequestPage() {
                   />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Parent Names</label>
-                <input
-                  type="text"
-                  value={formData.baptism_parent_names}
-                  onChange={e => setFormData({...formData, baptism_parent_names: e.target.value})}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
-                />
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Father's Name</label>
+                  <input
+                    type="text"
+                    value={formData.baptism_father_name}
+                    onChange={e => setFormData({...formData, baptism_father_name: e.target.value})}
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Mother's Name</label>
+                  <input
+                    type="text"
+                    value={formData.baptism_mother_name}
+                    onChange={e => setFormData({...formData, baptism_mother_name: e.target.value})}
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Godparents</label>
-                <input
-                  type="text"
-                  value={formData.baptism_godparents}
-                  onChange={e => setFormData({...formData, baptism_godparents: e.target.value})}
-                  placeholder="Names of godparents"
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
-                />
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Godparent 1</label>
+                  <input
+                    type="text"
+                    value={formData.baptism_godparent1}
+                    onChange={e => setFormData({...formData, baptism_godparent1: e.target.value})}
+                    placeholder="First godparent name"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Godparent 2</label>
+                  <input
+                    type="text"
+                    value={formData.baptism_godparent2}
+                    onChange={e => setFormData({...formData, baptism_godparent2: e.target.value})}
+                    placeholder="Second godparent name (optional)"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -171,47 +200,96 @@ export function SacramentRequestPage() {
           {type === 'wedding' && (
             <div className="space-y-4 border-t pt-4">
               <h3 className="font-semibold text-navy">Wedding Details</h3>
+              
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-gray-700">Groom Information</h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Groom Name *</label>
+                    <input
+                      type="text"
+                      value={formData.wedding_groom_name}
+                      onChange={e => setFormData({...formData, wedding_groom_name: e.target.value})}
+                      required
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Groom DOB *</label>
+                    <input
+                      type="date"
+                      value={formData.wedding_groom_dob}
+                      onChange={e => setFormData({...formData, wedding_groom_dob: e.target.value})}
+                      required
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Groom's Father</label>
+                    <input
+                      type="text"
+                      value={formData.wedding_groom_father}
+                      onChange={e => setFormData({...formData, wedding_groom_father: e.target.value})}
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Groom's Mother</label>
+                    <input
+                      type="text"
+                      value={formData.wedding_groom_mother}
+                      onChange={e => setFormData({...formData, wedding_groom_mother: e.target.value})}
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-gray-700">Bride Information</h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Bride Name *</label>
+                    <input
+                      type="text"
+                      value={formData.wedding_bride_name}
+                      onChange={e => setFormData({...formData, wedding_bride_name: e.target.value})}
+                      required
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Bride DOB *</label>
+                    <input
+                      type="date"
+                      value={formData.wedding_bride_dob}
+                      onChange={e => setFormData({...formData, wedding_bride_dob: e.target.value})}
+                      required
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Bride's Father</label>
+                    <input
+                      type="text"
+                      value={formData.wedding_bride_father}
+                      onChange={e => setFormData({...formData, wedding_bride_father: e.target.value})}
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Bride's Mother</label>
+                    <input
+                      type="text"
+                      value={formData.wedding_bride_mother}
+                      onChange={e => setFormData({...formData, wedding_bride_mother: e.target.value})}
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Groom Name</label>
-                  <input
-                    type="text"
-                    value={formData.wedding_groom_name}
-                    onChange={e => setFormData({...formData, wedding_groom_name: e.target.value})}
-                    required
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Groom DOB</label>
-                  <input
-                    type="date"
-                    value={formData.wedding_groom_dob}
-                    onChange={e => setFormData({...formData, wedding_groom_dob: e.target.value})}
-                    required
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Bride Name</label>
-                  <input
-                    type="text"
-                    value={formData.wedding_bride_name}
-                    onChange={e => setFormData({...formData, wedding_bride_name: e.target.value})}
-                    required
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Bride DOB</label>
-                  <input
-                    type="date"
-                    value={formData.wedding_bride_dob}
-                    onChange={e => setFormData({...formData, wedding_bride_dob: e.target.value})}
-                    required
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
-                  />
-                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Date</label>
                   <input
