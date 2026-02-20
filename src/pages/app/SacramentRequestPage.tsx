@@ -328,7 +328,7 @@ export function SacramentRequestPage() {
               <div className="mt-3">
                 <MediaUploader
                   accept="image/*,application/pdf"
-                  resourceType="auto"
+                  resourceType="raw"
                   onUploadComplete={(url) => {
                     setDocuments([...documents, url])
                     setShowUploader(false)

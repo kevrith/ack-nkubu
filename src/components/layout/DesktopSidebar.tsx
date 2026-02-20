@@ -192,30 +192,31 @@ export function DesktopSidebar() {
               <Shield className="w-5 h-5" />
               <span>Pastoral Care</span>
             </Link>
-            {(user?.profile.role === 'leader' || user?.profile.role === 'clergy' || user?.profile.role === 'admin') && (
-              <>
-                <Link
-                  to="/admin/ministries"
-                  className={cn(
-                    'flex items-center gap-3 px-6 py-3 transition-colors',
-                    location.pathname === '/admin/ministries' ? 'bg-navy-800 border-l-4 border-gold text-gold' : 'hover:bg-navy-700'
-                  )}
-                >
-                  <Briefcase className="w-5 h-5" />
-                  <span>Manage Ministries</span>
-                </Link>
-                <Link
-                  to="/admin/cell-groups"
-                  className={cn(
-                    'flex items-center gap-3 px-6 py-3 transition-colors',
-                    location.pathname === '/admin/cell-groups' ? 'bg-navy-800 border-l-4 border-gold text-gold' : 'hover:bg-navy-700'
-                  )}
-                >
-                  <Users className="w-5 h-5" />
-                  <span>Manage Cell Groups</span>
-                </Link>
-              </>
-            )}
+          </>
+        )}
+
+        {(user?.profile.role === 'leader' || user?.profile.role === 'clergy' || user?.profile.role === 'admin') && (
+          <>
+            <Link
+              to="/admin/ministries"
+              className={cn(
+                'flex items-center gap-3 px-6 py-3 transition-colors',
+                location.pathname === '/admin/ministries' ? 'bg-navy-800 border-l-4 border-gold text-gold' : 'hover:bg-navy-700'
+              )}
+            >
+              <Briefcase className="w-5 h-5" />
+              <span>Manage Ministries</span>
+            </Link>
+            <Link
+              to="/admin/cell-groups"
+              className={cn(
+                'flex items-center gap-3 px-6 py-3 transition-colors',
+                location.pathname === '/admin/cell-groups' ? 'bg-navy-800 border-l-4 border-gold text-gold' : 'hover:bg-navy-700'
+              )}
+            >
+              <Users className="w-5 h-5" />
+              <span>Manage Cell Groups</span>
+            </Link>
           </>
         )}
       </nav>
