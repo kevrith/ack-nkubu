@@ -37,17 +37,27 @@ export function PaybillShortcut() {
 
   const openMpesaUSSD = () => {
     if (!paybill) return
-    // Try to open M-Pesa app first (Android intent), fallback to USSD
-    const mpesaIntent = `intent://mpesa#Intent;scheme=mpesa;package=com.safaricom.mpesa;end`
+    
+    // Try multiple methods to open M-Pesa
+    // 1. Try M-Pesa Lifestyle app (newer app)
+    const mpesaLifestyle = `intent://mpesa#Intent;scheme=mpesa;package=com.safaricom.mpesa.lifestyle;end`
+    // 2. Try MySafaricom app
+    const mysafaricom = `intent://mpesa#Intent;scheme=mpesa;package=com.safaricom.mysafaricom;end`
+    // 3. Fallback to USSD
     const ussd = `tel:*334#`
     
-    // Try M-Pesa app intent (works on Android)
-    window.location.href = mpesaIntent
+    // Try M-Pesa Lifestyle first
+    window.location.href = mpesaLifestyle
     
-    // Fallback to USSD after short delay if app doesn't open
+    // Try MySafaricom after 500ms if first didn't work
+    setTimeout(() => {
+      window.location.href = mysafaricom
+    }, 500)
+    
+    // Fallback to USSD after 1.5s if apps don't open
     setTimeout(() => {
       window.location.href = ussd
-    }, 1000)
+    }, 1500)
   }
 
   return (
