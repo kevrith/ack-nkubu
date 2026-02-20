@@ -39,6 +39,9 @@ import { AdminCellGroupsPage } from '@/pages/admin/AdminCellGroupsPage'
 import { MinistriesPage } from '@/pages/app/MinistriesPage'
 import { AdminMinistriesPage } from '@/pages/admin/AdminMinistriesPage'
 import { ClergyDashboard } from '@/pages/admin/ClergyDashboard'
+import { SacramentsPage } from '@/pages/app/SacramentsPage'
+import { SacramentRequestPage } from '@/pages/app/SacramentRequestPage'
+import { ClergySacramentsDashboard } from '@/pages/admin/ClergySacramentsDashboard'
 
 export function AppRouter() {
   return (
@@ -262,6 +265,26 @@ export function AppRouter() {
           <ProtectedRoute>
             <RoleGuard requiredRole={['leader', 'clergy', 'admin']}>
               <AppLayout><AdminCellGroupsPage /></AppLayout>
+            </RoleGuard>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/sacraments" element={
+          <ProtectedRoute>
+            <AppLayout><SacramentsPage /></AppLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/sacraments/new" element={
+          <ProtectedRoute>
+            <AppLayout><SacramentRequestPage /></AppLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/clergy/sacraments" element={
+          <ProtectedRoute>
+            <RoleGuard requiredRole={['clergy', 'admin']}>
+              <AppLayout><ClergySacramentsDashboard /></AppLayout>
             </RoleGuard>
           </ProtectedRoute>
         } />

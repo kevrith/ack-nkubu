@@ -282,12 +282,12 @@ function TestimonyForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (
                 </button>
               </div>
             ) : (
-              <MediaUploader onUpload={setImageUrl}>
-                <div className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:bg-gray-50">
-                  <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-600">Click to upload image</p>
-                </div>
-              </MediaUploader>
+              <MediaUploader
+                accept="image/*"
+                resourceType="image"
+                onUploadComplete={(url) => setImageUrl(url)}
+                label=""
+              />
             )}
           </div>
 
