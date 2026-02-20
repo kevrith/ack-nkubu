@@ -23,8 +23,7 @@ export function PaybillShortcut() {
       .then(({ data, error }) => {
         if (!error && data) setPaybill(data)
         setLoading(false)
-      })
-      .catch(() => setLoading(false))
+      }, () => setLoading(false))
   }, [])
 
   if (loading) return <div className="text-sm text-gray-500">Loading paybill...</div>

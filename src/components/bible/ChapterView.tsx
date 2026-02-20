@@ -106,7 +106,7 @@ export function ChapterView() {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setCurrentChapter(null)}
+            onClick={() => setCurrentChapter('')}
             className="md:hidden p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
             title="Close"
           >

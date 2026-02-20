@@ -40,6 +40,8 @@ export interface CellGroup {
   address?: string
   max_members: number
   is_active: boolean
+  whatsapp_enabled?: boolean
+  whatsapp_link?: string
   created_at: string
   updated_at: string
   leader?: {
