@@ -156,6 +156,7 @@ export function PageEditor() {
   const [selectedPage, setSelectedPage] = useState<Page | null>(null);
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -167,10 +168,14 @@ export function PageEditor() {
   }, []);
 
   const loadPages = async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('cms_pages')
       .select('*')
       .order('created_at', { ascending: false });
+    if (error) {
+      setError('CMS tables not found. Please run migration 007_cms_tables.sql in Supabase SQL Editor.');
+      return;
+    }
     setPages(data || []);
   };
 
@@ -257,6 +262,26 @@ export function PageEditor() {
     setSelectedPage(updated);
     setPages(pages.map((p) => (p.id === updated.id ? updated : p)));
   };
+
+  if (error) {
+    return (
+      <div className="max-w-2xl mx-auto mt-12">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-red-900 mb-2">Database Setup Required</h2>
+          <p className="text-red-700 mb-4">{error}</p>
+          <div className="bg-white rounded p-4 text-sm">
+            <p className="font-medium mb-2">To fix this:</p>
+            <ol className="list-decimal list-inside space-y-1 text-gray-700">
+              <li>Go to your Supabase project dashboard</li>
+              <li>Open the SQL Editor</li>
+              <li>Run the migration file: <code className="bg-gray-100 px-1">supabase/migrations/007_cms_tables.sql</code></li>
+              <li>Refresh this page</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="grid md:grid-cols-[280px_1fr] gap-6">

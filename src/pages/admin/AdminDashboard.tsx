@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Users, DollarSign, FileText, Calendar, TrendingUp, Activity } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { formatKES } from '@/lib/utils'
+import { Link } from 'react-router-dom'
 import { AnalyticsCharts } from '@/components/analytics/AnalyticsCharts'
 
 interface Stats {
@@ -77,14 +78,14 @@ export function AdminDashboard() {
           <div className="text-sm text-green-600 mt-1">+{stats.newThisMonth} this month</div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <Link to="/admin/giving-reports" className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition">
           <div className="flex items-center justify-between mb-2">
             <div className="text-sm text-gray-600">Total Giving</div>
             <DollarSign className="w-5 h-5 text-gold" />
           </div>
           <div className="text-3xl font-bold text-navy">{formatKES(stats.totalGiving)}</div>
           <div className="text-sm text-gray-600 mt-1">{formatKES(stats.givingThisMonth)} this month</div>
-        </div>
+        </Link>
 
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-2">

@@ -1,4 +1,4 @@
-import { Home, BookOpen, Book, HandHeart, Mic, Cross as CrossIcon, Bell, Calendar, Users, Heart, Settings, Plus, Shield, UserCog, BookUser, Image, Send, Clock, FileEdit, FormInput, BarChart2 } from 'lucide-react'
+import { Home, BookOpen, Book, HandHeart, Mic, Cross as CrossIcon, Bell, Calendar, Users, Heart, Settings, Plus, Shield, UserCog, BookUser, Image, Send, Clock, FileEdit, FormInput, BarChart2, MessageCircleHeart, UsersRound, Briefcase } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
@@ -14,6 +14,9 @@ const navItems = [
   { icon: Calendar, label: 'Events', path: '/events' },
   { icon: Heart, label: 'Giving', path: '/giving' },
   { icon: Users, label: 'Community', path: '/community' },
+  { icon: MessageCircleHeart, label: 'Testimonies', path: '/testimonies' },
+  { icon: Briefcase, label: 'Ministries', path: '/ministries' },
+  { icon: UsersRound, label: 'Cell Groups', path: '/cell-groups' },
   { icon: HandHeart, label: 'Pastoral Care', path: '/pastoral-care' },
 ]
 
@@ -56,7 +59,7 @@ export function DesktopSidebar() {
           </Link>
         )}
 
-        {(user?.profile.role === 'admin' || user?.profile.role === 'clergy') && (
+        {user?.profile.role === 'admin' && (
           <>
             <Link
               to="/admin"
@@ -66,7 +69,22 @@ export function DesktopSidebar() {
               )}
             >
               <Settings className="w-5 h-5" />
-              <span>Dashboard</span>
+              <span>Admin Dashboard</span>
+            </Link>
+          </>
+        )}
+
+        {(user?.profile.role === 'clergy' || user?.profile.role === 'admin') && (
+          <>
+            <Link
+              to="/clergy/dashboard"
+              className={cn(
+                'flex items-center gap-3 px-6 py-3 transition-colors',
+                location.pathname === '/clergy/dashboard' ? 'bg-navy-800 border-l-4 border-gold text-gold' : 'hover:bg-navy-700'
+              )}
+            >
+              <Shield className="w-5 h-5" />
+              <span>Clergy Dashboard</span>
             </Link>
             <Link
               to="/admin/content"
@@ -175,6 +193,30 @@ export function DesktopSidebar() {
                 <Shield className="w-5 h-5" />
                 <span>Pastoral Care</span>
               </Link>
+            )}
+            {(user?.profile.role === 'leader' || user?.profile.role === 'clergy' || user?.profile.role === 'admin') && (
+              <>
+                <Link
+                  to="/admin/ministries"
+                  className={cn(
+                    'flex items-center gap-3 px-6 py-3 transition-colors',
+                    location.pathname === '/admin/ministries' ? 'bg-navy-800 border-l-4 border-gold text-gold' : 'hover:bg-navy-700'
+                  )}
+                >
+                  <Briefcase className="w-5 h-5" />
+                  <span>Manage Ministries</span>
+                </Link>
+                <Link
+                  to="/admin/cell-groups"
+                  className={cn(
+                    'flex items-center gap-3 px-6 py-3 transition-colors',
+                    location.pathname === '/admin/cell-groups' ? 'bg-navy-800 border-l-4 border-gold text-gold' : 'hover:bg-navy-700'
+                  )}
+                >
+                  <Users className="w-5 h-5" />
+                  <span>Manage Cell Groups</span>
+                </Link>
+              </>
             )}
           </>
         )}

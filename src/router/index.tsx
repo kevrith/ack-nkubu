@@ -32,6 +32,13 @@ import { FormBuilder } from '@/pages/admin/FormBuilder'
 import { MorePage } from '@/pages/app/PlaceholderPages'
 import { GivingReportsPage } from '@/pages/admin/GivingReportsPage'
 import { BCPPage } from '@/pages/app/BCPPage'
+import { TestimoniesPage } from '@/pages/app/TestimoniesPage'
+import { CellGroupsPage } from '@/pages/app/CellGroupsPage'
+import { CellGroupDetailPage } from '@/pages/app/CellGroupDetailPage'
+import { AdminCellGroupsPage } from '@/pages/admin/AdminCellGroupsPage'
+import { MinistriesPage } from '@/pages/app/MinistriesPage'
+import { AdminMinistriesPage } from '@/pages/admin/AdminMinistriesPage'
+import { ClergyDashboard } from '@/pages/admin/ClergyDashboard'
 
 export function AppRouter() {
   return (
@@ -151,7 +158,7 @@ export function AppRouter() {
 
         <Route path="/admin/media" element={
           <ProtectedRoute>
-            <RoleGuard requiredRole="admin">
+            <RoleGuard requiredRole={['clergy', 'admin']}>
               <AppLayout><MediaLibrary /></AppLayout>
             </RoleGuard>
           </ProtectedRoute>
@@ -167,7 +174,7 @@ export function AppRouter() {
 
         <Route path="/admin/notifications" element={
           <ProtectedRoute>
-            <RoleGuard requiredRole="admin">
+            <RoleGuard requiredRole={['clergy', 'admin']}>
               <AppLayout><NotificationSender /></AppLayout>
             </RoleGuard>
           </ProtectedRoute>
@@ -175,7 +182,7 @@ export function AppRouter() {
 
         <Route path="/admin/scheduled" element={
           <ProtectedRoute>
-            <RoleGuard requiredRole="admin">
+            <RoleGuard requiredRole={['clergy', 'admin']}>
               <AppLayout><ScheduledContent /></AppLayout>
             </RoleGuard>
           </ProtectedRoute>
@@ -183,7 +190,7 @@ export function AppRouter() {
 
         <Route path="/admin/pages" element={
           <ProtectedRoute>
-            <RoleGuard requiredRole="admin">
+            <RoleGuard requiredRole={['clergy', 'admin']}>
               <AppLayout><PageEditor /></AppLayout>
             </RoleGuard>
           </ProtectedRoute>
@@ -191,7 +198,7 @@ export function AppRouter() {
 
         <Route path="/admin/forms" element={
           <ProtectedRoute>
-            <RoleGuard requiredRole="admin">
+            <RoleGuard requiredRole={['clergy', 'admin']}>
               <AppLayout><FormBuilder /></AppLayout>
             </RoleGuard>
           </ProtectedRoute>
@@ -199,7 +206,7 @@ export function AppRouter() {
 
         <Route path="/admin/giving-reports" element={
           <ProtectedRoute>
-            <RoleGuard requiredRole="admin">
+            <RoleGuard requiredRole={['clergy', 'admin']}>
               <AppLayout><GivingReportsPage /></AppLayout>
             </RoleGuard>
           </ProtectedRoute>
@@ -208,6 +215,54 @@ export function AppRouter() {
         <Route path="/bcp" element={
           <ProtectedRoute>
             <AppLayout><BCPPage /></AppLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/testimonies" element={
+          <ProtectedRoute>
+            <AppLayout><TestimoniesPage /></AppLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/cell-groups" element={
+          <ProtectedRoute>
+            <AppLayout><CellGroupsPage /></AppLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/cell-groups/:id" element={
+          <ProtectedRoute>
+            <AppLayout><CellGroupDetailPage /></AppLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/ministries" element={
+          <ProtectedRoute>
+            <AppLayout><MinistriesPage /></AppLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/clergy/dashboard" element={
+          <ProtectedRoute>
+            <RoleGuard requiredRole={['clergy', 'admin']}>
+              <AppLayout><ClergyDashboard /></AppLayout>
+            </RoleGuard>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/admin/ministries" element={
+          <ProtectedRoute>
+            <RoleGuard requiredRole={['leader', 'clergy', 'admin']}>
+              <AppLayout><AdminMinistriesPage /></AppLayout>
+            </RoleGuard>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/admin/cell-groups" element={
+          <ProtectedRoute>
+            <RoleGuard requiredRole={['leader', 'clergy', 'admin']}>
+              <AppLayout><AdminCellGroupsPage /></AppLayout>
+            </RoleGuard>
           </ProtectedRoute>
         } />
 

@@ -14,6 +14,7 @@ export function ScheduledContent() {
   const [content, setContent] = useState<ScheduledContent[]>([]);
   const [filter, setFilter] = useState<'all' | 'draft' | 'scheduled'>('all');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadContent();
@@ -26,6 +27,12 @@ export function ScheduledContent() {
       supabase.from('events').select('id, title, start_datetime, is_published').order('start_datetime', { ascending: false }),
       supabase.from('pastors_corner').select('id, title, publish_date, is_published').order('publish_date', { ascending: false }),
     ]);
+
+    if (sermons.error || notices.error || events.error) {
+      setError('Unable to load content. Please check database tables.');
+      setLoading(false);
+      return;
+    }
 
     const allContent: ScheduledContent[] = [
       ...(sermons.data || []).map(s => ({ ...s, type: 'sermon' as const, publish_date: s.sermon_date })),
@@ -66,6 +73,17 @@ export function ScheduledContent() {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
+
+  if (error) {
+    return (
+      <div className="max-w-2xl mx-auto mt-12">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-red-900 mb-2">Error Loading Content</h2>
+          <p className="text-red-700">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) return <div className="text-center py-12">Loading...</div>;
 

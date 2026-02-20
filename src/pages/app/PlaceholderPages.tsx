@@ -1,4 +1,4 @@
-import { Home, BookOpen, HandHeart, Mic, Cross as CrossIcon, Bell, Calendar, Users, Heart, Settings, BookUser, Shield, Plus, UserCog, Image, Send, Clock, FileEdit, FormInput, User, BellRing } from 'lucide-react'
+import { Home, BookOpen, HandHeart, Mic, Cross as CrossIcon, Bell, Calendar, Users, Heart, Settings, BookUser, Shield, Plus, UserCog, Image, Send, Clock, FileEdit, FormInput, User, BellRing, MessageCircleHeart, UsersRound, Briefcase } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -15,6 +15,9 @@ export function MorePage() {
     { icon: Calendar, label: 'Events', path: '/events' },
     { icon: Heart, label: 'Giving', path: '/giving' },
     { icon: Users, label: 'Community', path: '/community' },
+    { icon: MessageCircleHeart, label: 'Testimonies', path: '/testimonies' },
+    { icon: Briefcase, label: 'Ministries', path: '/ministries' },
+    { icon: UsersRound, label: 'Cell Groups', path: '/cell-groups' },
     { icon: HandHeart, label: 'Pastoral Care', path: '/pastoral-care' },
     { icon: BellRing, label: 'Notifications', path: '/notifications' },
     { icon: User, label: 'Profile', path: '/profile' },
