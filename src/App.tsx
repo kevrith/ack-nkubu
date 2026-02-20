@@ -4,6 +4,7 @@ import { OfflineIndicator } from './components/shared/OfflineIndicator'
 import { PushNotifications } from './components/shared/PushNotifications'
 import { InstallPrompt } from './components/shared/InstallPrompt'
 import { OnboardingWizard } from './components/shared/OnboardingWizard'
+import { ErrorBoundary } from './components/shared/ErrorBoundary'
 import { useAuthStore } from './store/authStore'
 import './styles/globals.css'
 
@@ -23,7 +24,7 @@ function App() {
   }, [user, loading])
 
   return (
-    <>
+    <ErrorBoundary>
       <OfflineIndicator />
       <PushNotifications />
       <InstallPrompt />
@@ -31,7 +32,7 @@ function App() {
         <OnboardingWizard onComplete={() => setShowOnboarding(false)} />
       )}
       <AppRouter />
-    </>
+    </ErrorBoundary>
   )
 }
 

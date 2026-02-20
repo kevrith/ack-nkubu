@@ -7,12 +7,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const { user } = useAuth()
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-cream dark:bg-gray-900 transition-colors">
       <Header />
       {user && <DesktopSidebar />}
       <main className={`${
         user ? 'md:ml-64' : ''
-      } pt-2 sm:pt-4 pb-20 sm:pb-24 md:pb-8 px-3 sm:px-4 md:px-6 max-w-5xl mx-auto min-h-[calc(100vh-4rem)]`}>
+      } pt-2 sm:pt-4 pb-20 sm:pb-24 md:pb-8 px-3 sm:px-4 md:px-6 max-w-5xl mx-auto min-h-[calc(100vh-4rem)] dark:text-gray-100`}>
         {children}
       </main>
       {user && <MobileNav />}

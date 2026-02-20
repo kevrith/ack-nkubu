@@ -50,6 +50,30 @@ CREATE POLICY "giving_own_read" ON giving_records
 CREATE POLICY "giving_insert" ON giving_records
   FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 
+-- M-Pesa transactions policies
+CREATE POLICY "mpesa_own_read" ON mpesa_transactions
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM giving_records 
+      WHERE giving_records.id = mpesa_transactions.giving_record_id 
+      AND giving_records.donor_id = auth.uid()
+    )
+    OR get_user_role() IN ('leader', 'clergy', 'admin')
+  );
+
+CREATE POLICY "mpesa_insert" ON mpesa_transactions
+  FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+
+CREATE POLICY "mpesa_update" ON mpesa_transactions
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM giving_records 
+      WHERE giving_records.id = mpesa_transactions.giving_record_id 
+      AND giving_records.donor_id = auth.uid()
+    )
+    OR get_user_role() IN ('admin')
+  );
+
 -- Pastoral care policies
 CREATE POLICY "pastoral_care_read" ON pastoral_care_requests
   FOR SELECT USING (

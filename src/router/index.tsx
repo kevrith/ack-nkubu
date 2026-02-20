@@ -45,6 +45,8 @@ import { ClergySacramentsDashboard } from '@/pages/admin/ClergySacramentsDashboa
 import { PledgesPage } from '@/pages/app/PledgesPage'
 import { MakePledgePage } from '@/pages/app/MakePledgePage'
 import { AdminPledgesPage } from '@/pages/admin/AdminPledgesPage'
+import { ReferralPage } from '@/pages/app/ReferralPage'
+import { PaybillSettingsPage } from '@/pages/admin/PaybillSettingsPage'
 
 export function AppRouter() {
   return (
@@ -174,6 +176,14 @@ export function AppRouter() {
           <ProtectedRoute>
             <RoleGuard requiredRole="admin">
               <AppLayout><SettingsPage /></AppLayout>
+            </RoleGuard>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/admin/paybill" element={
+          <ProtectedRoute>
+            <RoleGuard requiredRole="admin">
+              <AppLayout><PaybillSettingsPage /></AppLayout>
             </RoleGuard>
           </ProtectedRoute>
         } />
@@ -315,6 +325,12 @@ export function AppRouter() {
         <Route path="/more" element={
           <ProtectedRoute>
             <AppLayout><MorePage /></AppLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/referrals" element={
+          <ProtectedRoute>
+            <AppLayout><ReferralPage /></AppLayout>
           </ProtectedRoute>
         } />
         

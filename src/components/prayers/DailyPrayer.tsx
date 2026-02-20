@@ -1,3 +1,6 @@
+import { Share2 } from 'lucide-react'
+import { shareViaWhatsApp } from '@/lib/whatsapp'
+
 export function DailyPrayer() {
   const hour = new Date().getHours()
   
@@ -44,7 +47,16 @@ Lighten our darkness, we beseech thee, O Lord; and by thy great mercy defend us 
 
   return (
     <div className="bg-navy text-white rounded-lg p-6">
-      <h2 className="text-2xl font-playfair mb-4 text-gold">{prayer.title}</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-2xl font-playfair text-gold">{prayer.title}</h2>
+        <button
+          onClick={() => shareViaWhatsApp(`${prayer.title}\n\n${prayer.content}`)}
+          className="flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
+        >
+          <Share2 className="w-3 h-3" />
+          Share
+        </button>
+      </div>
       <div className="font-lora text-lg leading-relaxed whitespace-pre-line">
         {prayer.content}
       </div>

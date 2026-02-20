@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { normalizeKenyanPhone, isValidKenyanPhone, formatKES } from '@/lib/utils'
 import { initiateMpesaPayment } from '@/lib/flutterwave'
 import { GivingCategory } from '@/types/giving'
+import { PaybillShortcut } from './PaybillShortcut'
 
 const categories: { value: GivingCategory; label: string; icon: string; min: number }[] = [
   { value: 'tithe', label: 'Tithe', icon: '📿', min: 10 },
@@ -38,57 +39,57 @@ export function GivingForm() {
     }
 
     setLoading(true)
-
-    // Create giving record
-    const { data: giving, error } = await supabase
-      .from('giving_records')
-      .insert({
-        donor_id: user.id,
-        amount_kes: amountNum,
-        category,
-        is_anonymous: isAnonymous,
-      })
-      .select()
-      .single()
-
-    if (error) {
-      alert('Failed to process giving')
-      setLoading(false)
-      return
-    }
-
-    // Create M-Pesa transaction record
-    const { data: mpesaRecord } = await supabase
-      .from('mpesa_transactions')
-      .insert({
-        giving_record_id: giving.id,
-        phone_number: normalizedPhone,
-        amount_kes: amountNum,
-        status: 'pending',
-      })
-      .select()
-      .single()
+    let givingId: string | null = null
+    let mpesaRecordId: string | null = null
 
     try {
-      // Initiate real Flutterwave M-Pesa payment
+      // Create giving record
+      const { data: giving, error } = await supabase
+        .from('giving_records')
+        .insert({
+          donor_id: user.id,
+          amount_kes: amountNum,
+          category,
+          is_anonymous: isAnonymous,
+        })
+        .select()
+        .single()
+
+      if (error || !giving) {
+        alert('Failed to process giving')
+        setLoading(false)
+        return
+      }
+      givingId = giving.id
+
+      // Create M-Pesa transaction record
+      const { data: mpesaRecord, error: mpesaError } = await supabase
+        .from('mpesa_transactions')
+        .insert({
+          giving_record_id: giving.id,
+          phone_number: normalizedPhone,
+          amount_kes: amountNum,
+          status: 'pending',
+        })
+        .select()
+        .single()
+
+      if (mpesaError || !mpesaRecord) {
+        throw new Error('Failed to create transaction record')
+      }
+      mpesaRecordId = mpesaRecord.id
+
       const result = await initiateMpesaPayment({
         amount: amountNum,
         currency: 'KES',
         email: user.email || 'member@church.org',
         phone_number: normalizedPhone,
         tx_ref: mpesaRecord.id,
+        mpesa_record_id: mpesaRecord.id,
+        giving_record_id: giving.id,
       })
 
       if (result.status === 'success') {
-        // Update transaction with merchant request ID
-        await supabase
-          .from('mpesa_transactions')
-          .update({
-            merchant_request_id: result.data?.link || 'pending',
-            status: 'pending',
-          })
-          .eq('id', mpesaRecord.id)
-
         setSuccess(true)
         setAmount('')
         setTimeout(() => setSuccess(false), 5000)
@@ -96,16 +97,17 @@ export function GivingForm() {
         throw new Error('Payment initiation failed')
       }
     } catch (error) {
-      // Update transaction as failed
-      await supabase
-        .from('mpesa_transactions')
-        .update({ status: 'failed' })
-        .eq('id', mpesaRecord.id)
-
+      // Rollback: delete both records
+      if (mpesaRecordId) {
+        await supabase.from('mpesa_transactions').delete().eq('id', mpesaRecordId)
+      }
+      if (givingId) {
+        await supabase.from('giving_records').delete().eq('id', givingId)
+      }
       alert('Failed to initiate M-Pesa payment. Please try again.')
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   if (!user) {
@@ -117,7 +119,19 @@ export function GivingForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
+    <div className="space-y-6">
+      <PaybillShortcut />
+      
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-300"></div>
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-2 bg-white text-gray-500">Or pay via STK Push</span>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
       {success && (
         <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
           ✓ Thank you for your giving! Your transaction was successful.
@@ -217,5 +231,6 @@ export function GivingForm() {
         Secure M-Pesa payment. You will receive a prompt on your phone.
       </p>
     </form>
+    </div>
   )
 }

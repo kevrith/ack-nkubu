@@ -18,26 +18,16 @@ export interface FlutterwaveResponse {
 }
 
 export async function initiateMpesaPayment(
-  paymentData: FlutterwavePaymentData
+  paymentData: FlutterwavePaymentData & { mpesa_record_id: string; giving_record_id: string }
 ): Promise<FlutterwaveResponse> {
   try {
-    const response = await fetch('https://api.flutterwave.com/v3/charges?type=mpesa', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${FLUTTERWAVE_PUBLIC_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        ...paymentData,
-        currency: 'KES',
-      }),
+    const { supabase } = await import('@/lib/supabase');
+    const { data, error } = await supabase.functions.invoke('initiate-mpesa', {
+      body: paymentData,
     });
 
-    if (!response.ok) {
-      throw new Error('Payment initiation failed');
-    }
-
-    return await response.json();
+    if (error) throw error;
+    return data;
   } catch (error) {
     console.error('Flutterwave error:', error);
     throw error;

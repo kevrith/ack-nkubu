@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { normalizeKenyanPhone, isValidKenyanPhone } from '@/lib/utils'
-import { Cross, Eye, EyeOff, ArrowLeft } from 'lucide-react'
+import { Cross, Eye, EyeOff, ArrowLeft, Gift } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export function RegisterPage() {
+  const [searchParams] = useSearchParams()
+  const referralCode = searchParams.get('ref')
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -15,6 +17,7 @@ export function RegisterPage() {
   const [cellGroups, setCellGroups] = useState<any[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [referrerName, setReferrerName] = useState('')
   const { signUp } = useAuth()
   const navigate = useNavigate()
 
@@ -22,7 +25,18 @@ export function RegisterPage() {
 
   useEffect(() => {
     loadCellGroups()
-  }, [])
+    if (referralCode) loadReferrer()
+  }, [referralCode])
+
+  async function loadReferrer() {
+    if (!referralCode) return
+    const { data } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('referral_code', referralCode)
+      .single()
+    if (data) setReferrerName(data.full_name)
+  }
 
   async function loadCellGroups() {
     const { data } = await supabase
@@ -49,15 +63,32 @@ export function RegisterPage() {
     if (signUpError) {
       setError(signUpError.message)
       setLoading(false)
-    } else if (data?.user && cellGroup) {
-      // Update profile with cell group
-      await supabase
-        .from('profiles')
-        .update({ cell_group: cellGroup })
-        .eq('id', data.user.id)
+    } else if (data?.user) {
+      // Handle referral
+      if (referralCode) {
+        const { data: referrer } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('referral_code', referralCode)
+          .single()
+        
+        if (referrer) {
+          await supabase.from('profiles').update({ referred_by: referrer.id }).eq('id', data.user.id)
+          await supabase.from('referrals').insert({
+            referrer_id: referrer.id,
+            referred_id: data.user.id,
+            referral_code: referralCode,
+            status: 'completed',
+            completed_at: new Date().toISOString()
+          })
+        }
+      }
       
-      navigate('/home')
-    } else {
+      // Update cell group
+      if (cellGroup) {
+        await supabase.from('profiles').update({ cell_group: cellGroup }).eq('id', data.user.id)
+      }
+      
       navigate('/home')
     }
   }
@@ -79,6 +110,16 @@ export function RegisterPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {referrerName && (
+              <div className="bg-gold-50 border border-gold-200 rounded-lg p-4 flex items-start gap-3">
+                <Gift className="w-5 h-5 text-gold-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-navy">Invited by {referrerName}</p>
+                  <p className="text-xs text-gray-600">You're joining through a referral link</p>
+                </div>
+              </div>
+            )}
+
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
                 {error}

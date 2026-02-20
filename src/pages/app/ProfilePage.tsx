@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { User, Phone, Users, BookOpen, LogOut, Save, Camera } from 'lucide-react'
+import { User, Phone, Users, BookOpen, LogOut, Save, Camera, Gift } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { normalizeKenyanPhone } from '@/lib/utils'
 import { BibleVersion } from '@/types/bible'
 import { AVAILABLE_VERSIONS } from '@/services/bible.service'
 import { MediaUploader } from '@/components/shared/MediaUploader'
+import { Link } from 'react-router-dom'
 
 const versionInfo: Record<BibleVersion, string> = {
   NIV: 'New International Version',
@@ -198,6 +199,18 @@ export function ProfilePage() {
             </button>
           )}
         </div>
+      </div>
+
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="font-semibold text-navy mb-4">Invite Friends</h3>
+        <p className="text-gray-600 mb-4">Share your faith community and earn rewards</p>
+        <Link
+          to="/referrals"
+          className="flex items-center gap-2 px-6 py-2 bg-gold text-navy rounded-lg hover:bg-gold-600 font-medium w-fit"
+        >
+          <Gift className="w-4 h-4" />
+          View Referral Program
+        </Link>
       </div>
 
       <div className="bg-white rounded-lg shadow p-6">

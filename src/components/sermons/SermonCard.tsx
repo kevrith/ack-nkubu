@@ -1,6 +1,7 @@
-import { Play, FileText, Calendar, User } from 'lucide-react'
+import { Play, FileText, Calendar, User, Share2 } from 'lucide-react'
 import { Sermon } from '@/types/sermon'
 import { formatDate } from '@/lib/utils'
+import { shareViaWhatsApp } from '@/lib/whatsapp'
 
 interface SermonCardProps {
   sermon: Sermon
@@ -49,10 +50,21 @@ export function SermonCard({ sermon, onPlay }: SermonCardProps) {
 
         <button
           onClick={() => onPlay(sermon)}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-navy text-white rounded-lg hover:bg-navy-600"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-navy text-white rounded-lg hover:bg-navy-600 mb-2"
         >
           <Play className="w-4 h-4" />
           Play Sermon
+        </button>
+        
+        <button
+          onClick={() => shareViaWhatsApp(
+            `Check out this sermon: "${sermon.title}" by ${sermon.preacher?.full_name || 'ACK St Francis Nkubu'} 🙏`,
+            window.location.origin + '/sermons'
+          )}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
+        >
+          <Share2 className="w-3 h-3" />
+          Share
         </button>
       </div>
     </div>

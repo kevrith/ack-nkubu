@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Plus, Edit, Trash, Users, MapPin, Clock, Calendar } from 'lucide-react'
+import { Plus, Edit, Trash, Users, MapPin, Clock, Calendar, MessageCircle } from 'lucide-react'
 import { CellGroup } from '@/types/testimony'
 
 export function AdminCellGroupsPage() {
@@ -128,6 +128,15 @@ export function AdminCellGroupsPage() {
               <div className="text-xs text-gray-500 mb-1">Leader</div>
               <div className="font-medium text-navy">{group.leader?.full_name}</div>
             </div>
+
+            {group.whatsapp_enabled && group.whatsapp_link && (
+              <div className="pt-2">
+                <div className="flex items-center gap-2 text-green-600 text-sm">
+                  <MessageCircle className="w-4 h-4" />
+                  <span>WhatsApp Group Active</span>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -172,6 +181,8 @@ function CellGroupForm({
   const [address, setAddress] = useState(group?.address || '')
   const [maxMembers, setMaxMembers] = useState(group?.max_members || 15)
   const [isActive, setIsActive] = useState(group?.is_active ?? true)
+  const [whatsappEnabled, setWhatsappEnabled] = useState(group?.whatsapp_enabled ?? false)
+  const [whatsappLink, setWhatsappLink] = useState(group?.whatsapp_link || '')
   const [submitting, setSubmitting] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
@@ -188,7 +199,9 @@ function CellGroupForm({
       location: location || null,
       address: address || null,
       max_members: maxMembers,
-      is_active: isActive
+      is_active: isActive,
+      whatsapp_enabled: whatsappEnabled,
+      whatsapp_link: whatsappLink || null
     }
 
     if (group) {
@@ -340,6 +353,44 @@ function CellGroupForm({
             <label htmlFor="isActive" className="text-sm text-gray-700">
               Active (visible to members)
             </label>
+          </div>
+
+          <div className="border-t pt-4">
+            <h3 className="font-semibold text-navy mb-3 flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-green-600" />
+              WhatsApp Integration
+            </h3>
+            
+            <div className="flex items-center gap-2 mb-3">
+              <input
+                type="checkbox"
+                id="whatsappEnabled"
+                checked={whatsappEnabled}
+                onChange={(e) => setWhatsappEnabled(e.target.checked)}
+                className="w-4 h-4"
+              />
+              <label htmlFor="whatsappEnabled" className="text-sm text-gray-700">
+                Enable WhatsApp Group Link
+              </label>
+            </div>
+
+            {whatsappEnabled && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  WhatsApp Group Invite Link
+                </label>
+                <input
+                  type="url"
+                  value={whatsappLink}
+                  onChange={(e) => setWhatsappLink(e.target.value)}
+                  className="w-full px-4 py-2 border rounded-lg"
+                  placeholder="https://chat.whatsapp.com/..."
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Get the invite link from your WhatsApp group settings
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="flex gap-3 pt-4">

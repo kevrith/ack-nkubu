@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
-import { ChevronLeft, ChevronRight, Type, List } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Type, List, Share2, X } from 'lucide-react'
 import { bibleService } from '@/services/bible.service'
 import { useBibleStore } from '@/store/bibleStore'
 import { BibleChapter } from '@/types/bible'
+import { shareViaWhatsApp } from '@/lib/whatsapp'
 
 const BOOK_CHAPTER_COUNTS: Record<string, number> = {
   GEN: 50, EXO: 40, LEV: 27, NUM: 36, DEU: 34, JOS: 24, JDG: 21, RUT: 4,
@@ -101,9 +102,16 @@ export function ChapterView() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-4 md:p-0">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setCurrentChapter(null)}
+            className="md:hidden p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
+            title="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
           <h2 className="text-2xl font-playfair text-navy">{chapter?.reference}</h2>
           <button
             onClick={() => setShowChapterSelector(!showChapterSelector)}
@@ -111,6 +119,13 @@ export function ChapterView() {
             title="Select chapter"
           >
             <List className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => shareViaWhatsApp(`Reading ${chapter?.reference} 📖`, window.location.href)}
+            className="p-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors"
+            title="Share via WhatsApp"
+          >
+            <Share2 className="w-4 h-4" />
           </button>
         </div>
         <div className="flex items-center gap-2">

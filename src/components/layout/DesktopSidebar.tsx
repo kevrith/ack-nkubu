@@ -26,7 +26,7 @@ export function DesktopSidebar() {
   const { user } = useAuth()
 
   return (
-    <aside className="hidden md:flex flex-col w-64 bg-navy text-white h-[calc(100vh-4rem)] fixed left-0 top-16 overflow-y-auto pb-4">
+    <aside className="hidden md:flex flex-col w-64 bg-navy dark:bg-gray-800 text-white h-[calc(100vh-4rem)] fixed left-0 top-16 overflow-y-auto pb-4 transition-colors">
       <nav className="flex-1 py-6">
         {navItems.map((item) => {
           const Icon = item.icon
@@ -38,7 +38,7 @@ export function DesktopSidebar() {
               to={item.path}
               className={cn(
                 'flex items-center gap-3 px-6 py-3 transition-colors',
-                isActive ? 'bg-navy-800 border-l-4 border-gold text-gold' : 'hover:bg-navy-700'
+                isActive ? 'bg-navy-800 dark:bg-gray-700 border-l-4 border-gold text-gold' : 'hover:bg-navy-700 dark:hover:bg-gray-700'
               )}
             >
               <Icon className="w-5 h-5" />

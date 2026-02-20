@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
-import { Users, Calendar, MapPin, Clock, Bell, Plus } from 'lucide-react'
+import { Users, Calendar, MapPin, Clock, Bell, Plus, MessageCircle } from 'lucide-react'
 import { CellGroup, CellGroupMember, CellGroupAnnouncement, CellGroupMeeting } from '@/types/testimony'
+import { shareToWhatsAppGroup } from '@/lib/whatsapp'
 
 export function CellGroupDetailPage() {
   const { id } = useParams()
@@ -152,6 +153,18 @@ export function CellGroupDetailPage() {
             </div>
           )}
         </div>
+
+        {group.whatsapp_enabled && group.whatsapp_link && (
+          <div className="mt-4 pt-4 border-t">
+            <button
+              onClick={() => shareToWhatsAppGroup(group.whatsapp_link!)}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 w-full justify-center font-medium"
+            >
+              <MessageCircle className="w-5 h-5" />
+              Join WhatsApp Group
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-lg shadow">

@@ -10,13 +10,22 @@ export function HomePage() {
   const [latestSermon, setLatestSermon] = useState<any>(null)
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([])
   const [recentNotices, setRecentNotices] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadDailyVerse()
-    loadLatestSermon()
-    loadUpcomingEvents()
-    loadRecentNotices()
+    loadData()
   }, [])
+
+  async function loadData() {
+    setLoading(true)
+    await Promise.all([
+      loadDailyVerse(),
+      loadLatestSermon(),
+      loadUpcomingEvents(),
+      loadRecentNotices()
+    ])
+    setLoading(false)
+  }
 
   async function loadDailyVerse() {
     const verses = [
@@ -50,6 +59,19 @@ export function HomePage() {
     if (hour < 12) return 'Good morning'
     if (hour < 18) return 'Good afternoon'
     return 'Good evening'
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="bg-gray-200 rounded-lg h-32" />
+        <div className="bg-gray-200 rounded-lg h-40" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[...Array(5)].map((_, i) => <div key={i} className="bg-gray-200 rounded-lg h-24" />)}
+        </div>
+        <div className="bg-gray-200 rounded-lg h-48" />
+      </div>
+    )
   }
 
   return (
