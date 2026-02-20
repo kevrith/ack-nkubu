@@ -4,9 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { SacramentRequest, SacramentRequestStatus } from '@/types/sacrament'
 
-export function ClergyS
-
-acramentsDashboard() {
+export function ClergySacramentsDashboard() {
   const { user } = useAuth()
   const [requests, setRequests] = useState<SacramentRequest[]>([])
   const [filter, setFilter] = useState<SacramentRequestStatus | 'all'>('pending')
