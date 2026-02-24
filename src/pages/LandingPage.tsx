@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { BookOpen, Users, Heart, Calendar, Bell, Video, HandHeart, Shield, Phone, Mail, MapPin, MessageCircleHeart } from 'lucide-react'
 
+const YOUTUBE_CHANNEL_URL = 'https://www.youtube.com/@ackstfrancis2776'
+
 export function LandingPage() {
   const [notices, setNotices] = useState<any[]>([])
   const [sermons, setSermons] = useState<any[]>([])
@@ -244,6 +246,19 @@ export function LandingPage() {
               <ContactItem icon={<Phone />} text={settings.church_phone} />
               <ContactItem icon={<Mail />} text={settings.church_email} />
               <ContactItem icon={<MapPin />} text={settings.church_address} />
+              <a
+                href={YOUTUBE_CHANNEL_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-4 text-lg group"
+              >
+                <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white group-hover:bg-red-700 transition-colors">
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                  </svg>
+                </div>
+                <span className="group-hover:text-red-400 transition-colors">Follow us on YouTube</span>
+              </a>
             </div>
           </div>
         </div>

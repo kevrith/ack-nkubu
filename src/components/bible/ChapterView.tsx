@@ -102,77 +102,69 @@ export function ChapterView() {
   }
 
   return (
-    <div className="space-y-4 p-4 md:p-0">
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="flex items-center gap-2">
+    <div className="space-y-4 p-3 sm:p-4 md:p-0">
+      {/* ── Toolbar ── */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        {/* Left: close + title + chapter picker + share */}
+        <div className="flex items-center gap-2 min-w-0">
           <button
             onClick={() => setCurrentChapter('')}
-            className="md:hidden p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
+            className="md:hidden flex-shrink-0 p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
             title="Close"
           >
             <X className="w-5 h-5" />
           </button>
-          <h2 className="text-2xl font-playfair text-navy">{chapter?.reference}</h2>
+          <h2 className="text-lg sm:text-2xl font-playfair text-navy truncate">{chapter?.reference}</h2>
           <button
             onClick={() => setShowChapterSelector(!showChapterSelector)}
-            className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+            className="flex-shrink-0 p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
             title="Select chapter"
           >
             <List className="w-4 h-4" />
           </button>
           <button
             onClick={() => shareViaWhatsApp(`Reading ${chapter?.reference} 📖`, window.location.href)}
-            className="p-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors"
+            className="flex-shrink-0 p-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors"
             title="Share via WhatsApp"
           >
             <Share2 className="w-4 h-4" />
           </button>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setFontSize('sm')}
-            className={`p-2 rounded ${fontSize === 'sm' ? 'bg-navy text-white' : 'bg-gray-100'}`}
-          >
-            <Type className="w-3 h-3" />
-          </button>
-          <button
-            onClick={() => setFontSize('md')}
-            className={`p-2 rounded ${fontSize === 'md' ? 'bg-navy text-white' : 'bg-gray-100'}`}
-          >
-            <Type className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setFontSize('lg')}
-            className={`p-2 rounded ${fontSize === 'lg' ? 'bg-navy text-white' : 'bg-gray-100'}`}
-          >
-            <Type className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => setFontSize('xl')}
-            className={`p-2 rounded ${fontSize === 'xl' ? 'bg-navy text-white' : 'bg-gray-100'}`}
-          >
-            <Type className="w-6 h-6" />
-          </button>
+
+        {/* Right: font-size selector */}
+        <div className="flex items-center gap-1 self-end sm:self-auto">
+          <span className="text-xs text-gray-400 mr-1 hidden sm:inline">Size</span>
+          {(['sm', 'md', 'lg', 'xl'] as const).map((size, i) => (
+            <button
+              key={size}
+              onClick={() => setFontSize(size)}
+              className={`p-1.5 rounded min-w-[32px] flex items-center justify-center ${fontSize === size ? 'bg-navy text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+              title={size.toUpperCase()}
+            >
+              <Type className={['w-3 h-3', 'w-4 h-4', 'w-5 h-5', 'w-6 h-6'][i]} />
+            </button>
+          ))}
         </div>
       </div>
 
+      {/* ── Chapter selector grid ── */}
       {showChapterSelector && parsed && (
-        <div className="bg-gray-50 rounded-lg p-4 border-2 border-navy">
+        <div className="bg-gray-50 rounded-lg p-3 sm:p-4 border-2 border-navy">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-navy">Select Chapter</h3>
+            <h3 className="font-semibold text-navy text-sm sm:text-base">Select Chapter</h3>
             <button
               onClick={() => setShowChapterSelector(false)}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-gray-500 hover:text-gray-700 text-lg leading-none"
             >
               ✕
             </button>
           </div>
-          <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-2 max-h-64 overflow-y-auto">
+          <div className="grid grid-cols-7 xs:grid-cols-8 sm:grid-cols-10 md:grid-cols-12 gap-1.5 max-h-52 overflow-y-auto">
             {Array.from({ length: totalChapters }, (_, i) => i + 1).map((num) => (
               <button
                 key={num}
                 onClick={() => handleChapterSelect(num)}
-                className={`p-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
                   num === parsed.chapterNum
                     ? 'bg-navy text-white'
                     : 'bg-white hover:bg-gold-50 border border-gray-200'
@@ -185,23 +177,25 @@ export function ChapterView() {
         </div>
       )}
 
+      {/* ── Bible text – extra bottom padding on mobile so content clears the fixed nav bar ── */}
       <div
-        className={`font-lora leading-relaxed ${fontSizes[fontSize]} prose max-w-none`}
+        className={`bible-content font-lora leading-relaxed ${fontSizes[fontSize]} pb-36 md:pb-4`}
         dangerouslySetInnerHTML={{ __html: chapter?.content || '' }}
       />
 
-      <div className="flex justify-between pt-4 border-t">
+      {/* ── Navigation ── sits above the app bottom-nav (h-16) on mobile, inline on desktop ── */}
+      <div className="fixed bottom-16 left-0 right-0 md:static bg-white flex justify-between gap-3 px-4 py-3 border-t shadow-[0_-2px_10px_rgba(0,0,0,0.10)] md:shadow-none md:px-0 md:pt-4 md:pb-0 z-[60]">
         <button
           onClick={() => navigateChapter('prev')}
           disabled={isFirstChapter}
-          className="flex items-center gap-2 px-4 py-2 bg-navy text-white rounded-lg hover:bg-navy-600 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-navy text-white rounded-lg hover:bg-navy-600 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium"
         >
           <ChevronLeft className="w-4 h-4" />
           Previous
         </button>
         <button
           onClick={() => navigateChapter('next')}
-          className="flex items-center gap-2 px-4 py-2 bg-navy text-white rounded-lg hover:bg-navy-600"
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-navy text-white rounded-lg hover:bg-navy-600 text-sm font-medium"
         >
           Next
           <ChevronRight className="w-4 h-4" />

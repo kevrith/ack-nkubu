@@ -64,6 +64,89 @@
   }
 }
 
+/* ─── Bible content styling ─── */
+.bible-content {
+  line-height: 1.9;
+}
+
+.bible-content p {
+  margin-bottom: 0.85rem;
+}
+
+/* Verse numbers – superscript gold numerals */
+.bible-content .v {
+  display: inline-block;
+  font-size: 0.62em;
+  font-weight: 700;
+  color: #b8972a;
+  vertical-align: super;
+  margin-right: 0.25em;
+  margin-left: 0.15em;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  line-height: 0;
+  user-select: none;
+}
+
+/* Words of Jesus in red */
+.bible-content .wj {
+  color: #b91c1c;
+}
+
+/* Divine Name (LORD) – small caps */
+.bible-content .nd {
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+}
+
+/* Added / implied words in translation */
+.bible-content .add {
+  font-style: italic;
+  opacity: 0.75;
+}
+
+/* Selah & right-aligned poetic markers */
+.bible-content .qs {
+  display: block;
+  font-style: italic;
+  text-align: right;
+  color: #6b7280;
+  font-size: 0.88em;
+  margin-top: 0.25rem;
+}
+
+/* Poetic indentation */
+.bible-content .q1 {
+  display: block;
+  padding-left: 1.25rem;
+  font-style: italic;
+}
+.bible-content .q2 {
+  display: block;
+  padding-left: 2.5rem;
+  font-style: italic;
+}
+
+/* Section headings within chapters */
+.bible-content .s1,
+.bible-content .ms {
+  display: block;
+  font-weight: 700;
+  font-size: 1em;
+  color: #1e3a5f;
+  margin-top: 1.25rem;
+  margin-bottom: 0.4rem;
+  font-family: 'Playfair Display', serif;
+}
+
+/* Hide scrollbar for tab bars while keeping scroll */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 /* Custom scrollbar for sidebar */
 .overflow-y-auto::-webkit-scrollbar {
   width: 6px;

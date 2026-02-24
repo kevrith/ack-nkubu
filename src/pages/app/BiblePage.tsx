@@ -16,66 +16,32 @@ export function BiblePage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-playfair text-navy">Bible Reader</h1>
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-xl sm:text-3xl font-playfair text-navy">Bible Reader</h1>
         <VersionSelector />
       </div>
 
-      <div className="flex gap-2 border-b border-gray-200">
-        <button
-          onClick={() => setView('read')}
-          className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
-            view === 'read' ? 'border-navy text-navy' : 'border-transparent text-gray-500'
-          }`}
-        >
-          <BookOpen className="w-4 h-4" />
-          Read
-        </button>
-        <button
-          onClick={() => setView('search')}
-          className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
-            view === 'search' ? 'border-navy text-navy' : 'border-transparent text-gray-500'
-          }`}
-        >
-          <SearchIcon className="w-4 h-4" />
-          Search
-        </button>
-        <button
-          onClick={() => setView('bookmarks')}
-          className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
-            view === 'bookmarks' ? 'border-navy text-navy' : 'border-transparent text-gray-500'
-          }`}
-        >
-          <Bookmark className="w-4 h-4" />
-          Bookmarks
-        </button>
-        <button
-          onClick={() => setView('plans')}
-          className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
-            view === 'plans' ? 'border-navy text-navy' : 'border-transparent text-gray-500'
-          }`}
-        >
-          <Calendar className="w-4 h-4" />
-          Reading Plans
-        </button>
-        <button
-          onClick={() => setView('compare')}
-          className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
-            view === 'compare' ? 'border-navy text-navy' : 'border-transparent text-gray-500'
-          }`}
-        >
-          <GitCompare className="w-4 h-4" />
-          Compare
-        </button>
-        <button
-          onClick={() => setView('offline')}
-          className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
-            view === 'offline' ? 'border-navy text-navy' : 'border-transparent text-gray-500'
-          }`}
-        >
-          <Download className="w-4 h-4" />
-          Offline
-        </button>
+      {/* Tab bar – scrollable on mobile, labels hidden on xs */}
+      <div className="flex gap-1 border-b border-gray-200 overflow-x-auto pb-px scrollbar-none">
+        {([
+          { id: 'read',      icon: <BookOpen className="w-4 h-4 flex-shrink-0" />,    label: 'Read' },
+          { id: 'search',    icon: <SearchIcon className="w-4 h-4 flex-shrink-0" />,  label: 'Search' },
+          { id: 'bookmarks', icon: <Bookmark className="w-4 h-4 flex-shrink-0" />,    label: 'Bookmarks' },
+          { id: 'plans',     icon: <Calendar className="w-4 h-4 flex-shrink-0" />,    label: 'Plans' },
+          { id: 'compare',   icon: <GitCompare className="w-4 h-4 flex-shrink-0" />,  label: 'Compare' },
+          { id: 'offline',   icon: <Download className="w-4 h-4 flex-shrink-0" />,    label: 'Offline' },
+        ] as const).map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setView(tab.id)}
+            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2.5 border-b-2 transition-colors text-sm font-medium ${
+              view === tab.id ? 'border-navy text-navy' : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            {tab.icon}
+            <span className="hidden sm:inline">{tab.label}</span>
+          </button>
+        ))}
       </div>
 
       {view === 'read' ? (
