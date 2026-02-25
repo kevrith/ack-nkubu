@@ -1,19 +1,34 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
-import { Users, Calendar, MapPin, Clock, Bell, Plus, MessageCircle } from 'lucide-react'
+import { Users, Calendar, MapPin, Clock, Bell, Plus, MessageCircle, X, Settings } from 'lucide-react'
 import { CellGroup, CellGroupMember, CellGroupAnnouncement, CellGroupMeeting } from '@/types/testimony'
 import { shareToWhatsAppGroup } from '@/lib/whatsapp'
 
 export function CellGroupDetailPage() {
   const { id } = useParams()
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [group, setGroup] = useState<CellGroup | null>(null)
   const [members, setMembers] = useState<CellGroupMember[]>([])
   const [announcements, setAnnouncements] = useState<CellGroupAnnouncement[]>([])
   const [meetings, setMeetings] = useState<CellGroupMeeting[]>([])
   const [activeTab, setActiveTab] = useState<'announcements' | 'members' | 'meetings'>('announcements')
+
+  // Announcement modal state
+  const [showAnnouncementModal, setShowAnnouncementModal] = useState(false)
+  const [announcementTitle, setAnnouncementTitle] = useState('')
+  const [announcementContent, setAnnouncementContent] = useState('')
+  const [savingAnnouncement, setSavingAnnouncement] = useState(false)
+
+  // Meeting modal state
+  const [showMeetingModal, setShowMeetingModal] = useState(false)
+  const [meetingDate, setMeetingDate] = useState(new Date().toISOString().split('T')[0])
+  const [meetingTopic, setMeetingTopic] = useState('')
+  const [meetingAttendance, setMeetingAttendance] = useState('')
+  const [meetingNotes, setMeetingNotes] = useState('')
+  const [savingMeeting, setSavingMeeting] = useState(false)
 
   const isLeader = group?.leader_id === user?.id || group?.assistant_leader_id === user?.id
 
@@ -74,6 +89,44 @@ export function CellGroupDetailPage() {
     setMeetings(data || [])
   }
 
+  async function handleSaveAnnouncement() {
+    if (!announcementTitle.trim() || !announcementContent.trim() || !user) return
+    setSavingAnnouncement(true)
+    const { error } = await supabase.from('cell_group_announcements').insert({
+      cell_group_id: id,
+      title: announcementTitle.trim(),
+      content: announcementContent.trim(),
+      created_by: user.id,
+    })
+    setSavingAnnouncement(false)
+    if (!error) {
+      setShowAnnouncementModal(false)
+      setAnnouncementTitle('')
+      setAnnouncementContent('')
+      loadAnnouncements()
+    }
+  }
+
+  async function handleSaveMeeting() {
+    if (!meetingDate || !user) return
+    setSavingMeeting(true)
+    const { error } = await supabase.from('cell_group_meetings').insert({
+      cell_group_id: id,
+      meeting_date: meetingDate,
+      topic: meetingTopic.trim() || null,
+      attendance_count: parseInt(meetingAttendance) || 0,
+      notes: meetingNotes.trim() || null,
+    })
+    setSavingMeeting(false)
+    if (!error) {
+      setShowMeetingModal(false)
+      setMeetingTopic('')
+      setMeetingAttendance('')
+      setMeetingNotes('')
+      loadMeetings()
+    }
+  }
+
   if (!group) {
     return <div className="text-center py-12">Loading...</div>
   }
@@ -87,7 +140,11 @@ export function CellGroupDetailPage() {
             {group.description && <p className="text-gray-600">{group.description}</p>}
           </div>
           {isLeader && (
-            <button className="px-4 py-2 bg-navy text-white rounded-lg hover:bg-navy/90">
+            <button
+              onClick={() => navigate('/admin/cell-groups')}
+              className="flex items-center gap-2 px-4 py-2 bg-navy text-white rounded-lg hover:bg-navy/90"
+            >
+              <Settings className="w-4 h-4" />
               Manage
             </button>
           )}
@@ -207,7 +264,10 @@ export function CellGroupDetailPage() {
           {activeTab === 'announcements' && (
             <div className="space-y-4">
               {isLeader && (
-                <button className="flex items-center gap-2 px-4 py-2 bg-gold text-navy rounded-lg hover:bg-gold/90 font-semibold">
+                <button
+                  onClick={() => setShowAnnouncementModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-gold text-navy rounded-lg hover:bg-gold/90 font-semibold"
+                >
                   <Plus className="w-4 h-4" />
                   New Announcement
                 </button>
@@ -267,7 +327,10 @@ export function CellGroupDetailPage() {
           {activeTab === 'meetings' && (
             <div className="space-y-4">
               {isLeader && (
-                <button className="flex items-center gap-2 px-4 py-2 bg-gold text-navy rounded-lg hover:bg-gold/90 font-semibold">
+                <button
+                  onClick={() => setShowMeetingModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-gold text-navy rounded-lg hover:bg-gold/90 font-semibold"
+                >
                   <Plus className="w-4 h-4" />
                   Record Meeting
                 </button>
@@ -309,6 +372,128 @@ export function CellGroupDetailPage() {
           )}
         </div>
       </div>
+
+      {/* New Announcement Modal */}
+      {showAnnouncementModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h2 className="text-xl font-playfair font-semibold text-navy">New Announcement</h2>
+              <button onClick={() => setShowAnnouncementModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <input
+                  type="text"
+                  value={announcementTitle}
+                  onChange={(e) => setAnnouncementTitle(e.target.value)}
+                  placeholder="Announcement title"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-navy focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                <textarea
+                  value={announcementContent}
+                  onChange={(e) => setAnnouncementContent(e.target.value)}
+                  placeholder="Write your announcement..."
+                  rows={4}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-navy focus:border-transparent resize-none"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 p-6 pt-0">
+              <button
+                onClick={handleSaveAnnouncement}
+                disabled={savingAnnouncement || !announcementTitle.trim() || !announcementContent.trim()}
+                className="flex-1 px-4 py-2 bg-navy text-white rounded-lg hover:bg-navy/90 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {savingAnnouncement ? 'Saving...' : 'Post Announcement'}
+              </button>
+              <button
+                onClick={() => setShowAnnouncementModal(false)}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Record Meeting Modal */}
+      {showMeetingModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h2 className="text-xl font-playfair font-semibold text-navy">Record Meeting</h2>
+              <button onClick={() => setShowMeetingModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Meeting Date</label>
+                <input
+                  type="date"
+                  value={meetingDate}
+                  onChange={(e) => setMeetingDate(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-navy focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Topic</label>
+                <input
+                  type="text"
+                  value={meetingTopic}
+                  onChange={(e) => setMeetingTopic(e.target.value)}
+                  placeholder="Meeting topic (optional)"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-navy focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Attendance Count</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={meetingAttendance}
+                  onChange={(e) => setMeetingAttendance(e.target.value)}
+                  placeholder="Number of attendees"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-navy focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                <textarea
+                  value={meetingNotes}
+                  onChange={(e) => setMeetingNotes(e.target.value)}
+                  placeholder="Meeting notes (optional)"
+                  rows={3}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-navy focus:border-transparent resize-none"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 p-6 pt-0">
+              <button
+                onClick={handleSaveMeeting}
+                disabled={savingMeeting || !meetingDate}
+                className="flex-1 px-4 py-2 bg-navy text-white rounded-lg hover:bg-navy/90 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {savingMeeting ? 'Saving...' : 'Save Meeting'}
+              </button>
+              <button
+                onClick={() => setShowMeetingModal(false)}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

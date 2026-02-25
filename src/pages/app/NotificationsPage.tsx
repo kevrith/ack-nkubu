@@ -102,6 +102,7 @@ export function NotificationsPage() {
                   <p className="text-gray-600 text-sm mb-2">{notification.message}</p>
                   <p className="text-xs text-gray-400">
                     {new Date(notification.created_at).toLocaleDateString('en-US', {
+                      year: 'numeric',
                       month: 'short',
                       day: 'numeric',
                       hour: '2-digit',

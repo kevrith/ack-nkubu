@@ -3,6 +3,8 @@ import { AlertTriangle } from 'lucide-react'
 
 interface Props {
   children: ReactNode
+  /** If true, shows a compact card instead of a full-screen error */
+  inline?: boolean
 }
 
 interface State {
@@ -22,6 +24,22 @@ export class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
+      if (this.props.inline) {
+        return (
+          <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+            <AlertTriangle className="w-12 h-12 text-red-400 mb-3" />
+            <h2 className="text-lg font-semibold text-navy mb-1">This page ran into an error</h2>
+            <p className="text-gray-500 text-sm mb-4">Please try refreshing or go back.</p>
+            <button
+              onClick={() => this.setState({ hasError: false })}
+              className="px-5 py-2 bg-navy text-white rounded-lg hover:bg-navy/90 text-sm"
+            >
+              Try Again
+            </button>
+          </div>
+        )
+      }
+
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
           <div className="bg-white rounded-lg shadow-lg p-8 max-w-md text-center">

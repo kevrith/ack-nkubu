@@ -3,6 +3,17 @@ import { supabase } from '@/lib/supabase';
 import { Settings, Save, Smartphone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+interface ServiceTime {
+  time: string
+  language: string
+  venue: string
+}
+
+const DEFAULT_SERVICE_TIMES: ServiceTime[] = [
+  { time: '8:30 AM - 9:45 AM', language: 'English', venue: 'Main Church' },
+  { time: '10:00 AM - 12:00 PM', language: 'Kiswahili', venue: 'Main Church' },
+]
+
 export function SettingsPage() {
   const [churchName, setChurchName] = useState('ACK St Francis Nkubu');
   const [churchEmail, setChurchEmail] = useState('');
@@ -11,6 +22,9 @@ export function SettingsPage() {
   const [enableNotifications, setEnableNotifications] = useState(true);
   const [enableGiving, setEnableGiving] = useState(true);
   const [enableCommunity, setEnableCommunity] = useState(true);
+  const [serviceTimes, setServiceTimes] = useState<ServiceTime[]>(DEFAULT_SERVICE_TIMES);
+  const [dailyVerseText, setDailyVerseText] = useState('');
+  const [dailyVerseReference, setDailyVerseReference] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -34,6 +48,11 @@ export function SettingsPage() {
           case 'enable_notifications': setEnableNotifications(value); break;
           case 'enable_giving': setEnableGiving(value); break;
           case 'enable_community': setEnableCommunity(value); break;
+          case 'service_times': if (Array.isArray(value) && value.length) setServiceTimes(value); break;
+          case 'daily_verse':
+            if (value?.text) setDailyVerseText(value.text);
+            if (value?.reference) setDailyVerseReference(value.reference);
+            break;
         }
       });
     }
@@ -50,6 +69,8 @@ export function SettingsPage() {
       { key: 'enable_notifications', value: enableNotifications },
       { key: 'enable_giving', value: enableGiving },
       { key: 'enable_community', value: enableCommunity },
+      { key: 'service_times', value: serviceTimes },
+      { key: 'daily_verse', value: { text: dailyVerseText, reference: dailyVerseReference } },
     ];
 
     for (const setting of settings) {
@@ -130,6 +151,79 @@ export function SettingsPage() {
             <Smartphone className="w-5 h-5" />
             Configure Paybill Settings
           </Link>
+        </div>
+
+        <div className="border-t pt-6">
+          <h2 className="text-xl font-semibold text-navy mb-4">Sunday Service Times</h2>
+          <div className="space-y-3">
+            {serviceTimes.map((slot, i) => (
+              <div key={i} className="grid grid-cols-3 gap-3 items-center">
+                <input
+                  type="text"
+                  value={slot.time}
+                  onChange={(e) => setServiceTimes(prev => prev.map((s, idx) => idx === i ? { ...s, time: e.target.value } : s))}
+                  placeholder="e.g. 8:30 AM - 9:45 AM"
+                  className="px-3 py-2 border rounded-lg text-sm"
+                />
+                <input
+                  type="text"
+                  value={slot.language}
+                  onChange={(e) => setServiceTimes(prev => prev.map((s, idx) => idx === i ? { ...s, language: e.target.value } : s))}
+                  placeholder="Language"
+                  className="px-3 py-2 border rounded-lg text-sm"
+                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={slot.venue}
+                    onChange={(e) => setServiceTimes(prev => prev.map((s, idx) => idx === i ? { ...s, venue: e.target.value } : s))}
+                    placeholder="Venue"
+                    className="flex-1 px-3 py-2 border rounded-lg text-sm"
+                  />
+                  {serviceTimes.length > 1 && (
+                    <button
+                      onClick={() => setServiceTimes(prev => prev.filter((_, idx) => idx !== i))}
+                      className="px-2 py-1 text-red-500 hover:bg-red-50 rounded text-sm"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+            <button
+              onClick={() => setServiceTimes(prev => [...prev, { time: '', language: '', venue: '' }])}
+              className="text-sm text-navy hover:underline"
+            >
+              + Add service time
+            </button>
+          </div>
+        </div>
+
+        <div className="border-t pt-6">
+          <h2 className="text-xl font-semibold text-navy mb-4">Daily Verse</h2>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium mb-1">Verse Text</label>
+              <textarea
+                value={dailyVerseText}
+                onChange={(e) => setDailyVerseText(e.target.value)}
+                rows={3}
+                placeholder="Enter the Bible verse text..."
+                className="w-full px-3 py-2 border rounded-lg text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Reference</label>
+              <input
+                type="text"
+                value={dailyVerseReference}
+                onChange={(e) => setDailyVerseReference(e.target.value)}
+                placeholder="e.g. John 3:16"
+                className="w-full px-3 py-2 border rounded-lg text-sm"
+              />
+            </div>
+          </div>
         </div>
 
         <div className="border-t pt-6">

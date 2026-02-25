@@ -36,17 +36,18 @@ export function MinistriesPage() {
     const { data } = await query
 
     if (data) {
-      const ministriesWithCounts = await Promise.all(
-        data.map(async (ministry) => {
-          const { count } = await supabase
-            .from('ministry_members')
-            .select('*', { count: 'exact', head: true })
-            .eq('ministry_id', ministry.id)
-            .eq('is_active', true)
-          return { ...ministry, member_count: count || 0 }
-        })
-      )
-      setMinistries(ministriesWithCounts)
+      const { data: memberRows } = await supabase
+        .from('ministry_members')
+        .select('ministry_id')
+        .in('ministry_id', data.map(m => m.id))
+        .eq('is_active', true)
+
+      const countMap: Record<string, number> = {}
+      memberRows?.forEach(m => {
+        countMap[m.ministry_id] = (countMap[m.ministry_id] || 0) + 1
+      })
+
+      setMinistries(data.map(m => ({ ...m, member_count: countMap[m.id] || 0 })))
     }
     setLoading(false)
   }

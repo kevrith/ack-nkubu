@@ -28,12 +28,9 @@ export async function requestNotificationPermission() {
   return null
 }
 
-export function onMessageListener() {
-  return new Promise((resolve) => {
-    onMessage(messaging, (payload) => {
-      resolve(payload)
-    })
-  })
+/** Subscribe to foreground messages. Returns an unsubscribe function. */
+export function onMessageListener(callback: (payload: any) => void) {
+  return onMessage(messaging, callback)
 }
 
 export { messaging }

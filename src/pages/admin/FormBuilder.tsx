@@ -36,7 +36,6 @@ export function FormBuilder() {
   };
 
   const saveForm = () => {
-    console.log('Form saved:', { formName, fields });
     setSuccess(true);
     setTimeout(() => setSuccess(false), 3000);
   };

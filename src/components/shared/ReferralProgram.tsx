@@ -36,7 +36,7 @@ export function ReferralProgram() {
       
       if (refError) {
         console.error('Referrals error:', refError)
-        setError('Database not set up. Please run the migration first.')
+        setError('Could not load referrals. Please try again later.')
       } else {
         // Fetch referred user details separately
         if (data && data.length > 0) {
@@ -80,12 +80,8 @@ export function ReferralProgram() {
   return (
     <div className="space-y-6">
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800 font-medium">⚠️ Setup Required</p>
-          <p className="text-red-600 text-sm mt-1">{error}</p>
-          <p className="text-red-600 text-sm mt-2">
-            Please run the database migration: <code className="bg-red-100 px-2 py-1 rounded">020_offline_whatsapp_referrals.sql</code>
-          </p>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <p className="text-yellow-800 text-sm">{error}</p>
         </div>
       )}
 

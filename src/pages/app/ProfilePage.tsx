@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { User, Phone, Users, BookOpen, LogOut, Save, Camera, Gift } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { useAuthStore } from '@/store/authStore'
 import { normalizeKenyanPhone } from '@/lib/utils'
 import { BibleVersion } from '@/types/bible'
 import { AVAILABLE_VERSIONS } from '@/services/bible.service'
@@ -16,6 +17,7 @@ const versionInfo: Record<BibleVersion, string> = {
 
 export function ProfilePage() {
   const { user, signOut } = useAuth()
+  const { setUser } = useAuthStore()
   const [editing, setEditing] = useState(false)
   const [fullName, setFullName] = useState(user?.profile.full_name || '')
   const [phone, setPhone] = useState(user?.profile.phone || '')
@@ -45,10 +47,20 @@ export function ProfilePage() {
       .eq('id', user.id)
 
     if (!error) {
+      setUser({
+        ...user,
+        profile: {
+          ...user.profile,
+          full_name: fullName,
+          phone: normalizeKenyanPhone(phone) || null,
+          cell_group: cellGroup || null,
+          preferred_bible_version: preferredBibleVersion,
+          avatar_url: avatarUrl || null,
+        },
+      })
       setSuccess(true)
       setEditing(false)
       setTimeout(() => setSuccess(false), 3000)
-      window.location.reload()
     }
     setLoading(false)
   }

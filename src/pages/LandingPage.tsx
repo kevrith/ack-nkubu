@@ -5,10 +5,20 @@ import { BookOpen, Users, Heart, Calendar, Bell, Video, HandHeart, Shield, Phone
 
 const YOUTUBE_CHANNEL_URL = 'https://www.youtube.com/@ackstfrancis2776'
 
+interface ServiceTime {
+  time: string
+  language: string
+  venue: string
+}
+
 export function LandingPage() {
   const [notices, setNotices] = useState<any[]>([])
   const [sermons, setSermons] = useState<any[]>([])
   const [testimonies, setTestimonies] = useState<any[]>([])
+  const [serviceTimes, setServiceTimes] = useState<ServiceTime[]>([
+    { time: '8:30 AM - 9:45 AM', language: 'English', venue: 'Main Church' },
+    { time: '10:00 AM - 12:00 PM', language: 'Kiswahili', venue: 'Main Church' },
+  ])
   const [settings, setSettings] = useState({
     church_name: 'ACK St Francis Nkubu',
     church_email: 'info@ackparish.org',
@@ -29,6 +39,9 @@ export function LandingPage() {
       const settingsObj: any = {}
       data.forEach(s => { settingsObj[s.key] = s.value })
       setSettings(prev => ({ ...prev, ...settingsObj }))
+      if (Array.isArray(settingsObj.service_times) && settingsObj.service_times.length) {
+        setServiceTimes(settingsObj.service_times)
+      }
     }
   }
 
@@ -131,16 +144,13 @@ export function LandingPage() {
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b">
-                  <td className="px-6 py-4 font-medium">8:30 AM - 9:45 AM</td>
-                  <td className="px-6 py-4">English</td>
-                  <td className="px-6 py-4">Main Church</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 font-medium">10:00 AM - 12:00 PM</td>
-                  <td className="px-6 py-4">Kiswahili</td>
-                  <td className="px-6 py-4">Main Church</td>
-                </tr>
+                {serviceTimes.map((slot, i) => (
+                  <tr key={i} className={i < serviceTimes.length - 1 ? 'border-b' : ''}>
+                    <td className="px-6 py-4 font-medium">{slot.time}</td>
+                    <td className="px-6 py-4">{slot.language}</td>
+                    <td className="px-6 py-4">{slot.venue}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

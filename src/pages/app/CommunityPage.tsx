@@ -43,11 +43,13 @@ export function CommunityPage() {
       .update({ likes_count: post.likes_count + 1 })
       .eq('id', postId)
 
-    fetchPosts()
+    setPosts(prev =>
+      prev.map(p => p.id === postId ? { ...p, likes_count: p.likes_count + 1 } : p)
+    )
   }
 
-  function handleComment(postId: string) {
-    // Comment functionality can be expanded
+  function handleComment(_postId: string) {
+    // Comments are handled inside PostCard
   }
 
   return (

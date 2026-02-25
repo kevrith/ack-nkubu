@@ -13,6 +13,7 @@ import { SermonsPage } from '@/pages/app/SermonsPage'
 import { PastorsCornerPage } from '@/pages/app/PastorsCornerPage'
 import { NoticesPage } from '@/pages/app/NoticesPage'
 import { EventsPage } from '@/pages/app/EventsPage'
+import { EventDetailPage } from '@/pages/app/EventDetailPage'
 import { CommunityPage } from '@/pages/app/CommunityPage'
 import { GivingPage } from '@/pages/app/GivingPage'
 import { PastoralCarePage } from '@/pages/app/PastoralCarePage'
@@ -40,7 +41,16 @@ import { MinistriesPage } from '@/pages/app/MinistriesPage'
 import { AdminMinistriesPage } from '@/pages/admin/AdminMinistriesPage'
 import { ClergyDashboard } from '@/pages/admin/ClergyDashboard'
 import { PaybillSettingsPage } from '@/pages/admin/PaybillSettingsPage'
+import { ClergySacramentsDashboard } from '@/pages/admin/ClergySacramentsDashboard'
+import { AdminPledgesPage } from '@/pages/admin/AdminPledgesPage'
 import { SacramentsPage } from '@/pages/app/SacramentsPage'
+import { SacramentRequestPage } from '@/pages/app/SacramentRequestPage'
+import { SacramentDetailPage } from '@/pages/app/SacramentDetailPage'
+import { PledgesPage } from '@/pages/app/PledgesPage'
+import { MakePledgePage } from '@/pages/app/MakePledgePage'
+import { PledgeDetailPage } from '@/pages/app/PledgeDetailPage'
+import { ReferralPage } from '@/pages/app/ReferralPage'
+import { MinistryDetailPage } from '@/pages/app/MinistryDetailPage'
 
 export function AppRouter() {
   return (
@@ -87,7 +97,13 @@ export function AppRouter() {
             <AppLayout><EventsPage /></AppLayout>
           </ProtectedRoute>
         } />
-        
+
+        <Route path="/events/:id" element={
+          <ProtectedRoute>
+            <AppLayout><EventDetailPage /></AppLayout>
+          </ProtectedRoute>
+        } />
+
         <Route path="/giving" element={
           <ProtectedRoute>
             <AppLayout><GivingPage /></AppLayout>
@@ -221,6 +237,14 @@ export function AppRouter() {
             </RoleGuard>
           </ProtectedRoute>
         } />
+
+        <Route path="/admin/pledges" element={
+          <ProtectedRoute>
+            <RoleGuard requiredRole={['clergy', 'admin']}>
+              <AppLayout><AdminPledgesPage /></AppLayout>
+            </RoleGuard>
+          </ProtectedRoute>
+        } />
         
         <Route path="/bcp" element={
           <ProtectedRoute>
@@ -260,6 +284,14 @@ export function AppRouter() {
           </ProtectedRoute>
         } />
 
+        <Route path="/clergy/sacraments" element={
+          <ProtectedRoute>
+            <RoleGuard requiredRole={['clergy', 'admin']}>
+              <AppLayout><ClergySacramentsDashboard /></AppLayout>
+            </RoleGuard>
+          </ProtectedRoute>
+        } />
+
         <Route path="/admin/ministries" element={
           <ProtectedRoute>
             <RoleGuard requiredRole={['leader', 'clergy', 'admin']}>
@@ -281,7 +313,55 @@ export function AppRouter() {
             <AppLayout><MorePage /></AppLayout>
           </ProtectedRoute>
         } />
-        
+
+        <Route path="/sacraments" element={
+          <ProtectedRoute>
+            <AppLayout><SacramentsPage /></AppLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/sacraments/new" element={
+          <ProtectedRoute>
+            <AppLayout><SacramentRequestPage /></AppLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/sacraments/:id" element={
+          <ProtectedRoute>
+            <AppLayout><SacramentDetailPage /></AppLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/pledges" element={
+          <ProtectedRoute>
+            <AppLayout><PledgesPage /></AppLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/pledges/my/:pledgeId" element={
+          <ProtectedRoute>
+            <AppLayout><PledgeDetailPage /></AppLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/pledges/:campaignId" element={
+          <ProtectedRoute>
+            <AppLayout><MakePledgePage /></AppLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/referrals" element={
+          <ProtectedRoute>
+            <AppLayout><ReferralPage /></AppLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/ministries/:id" element={
+          <ProtectedRoute>
+            <AppLayout><MinistryDetailPage /></AppLayout>
+          </ProtectedRoute>
+        } />
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

@@ -28,6 +28,8 @@ export function useAuth() {
   }, [])
 
   async function fetchProfile(userId: string) {
+    const cacheKey = `cached_profile_${userId}`
+
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -35,15 +37,34 @@ export function useAuth() {
       .single()
 
     if (error || !data) {
-      setUser(null)
+      // Offline fallback: restore from localStorage cache
+      const cached = localStorage.getItem(cacheKey)
+      if (cached) {
+        try {
+          const { data: { user: authUser } } = await supabase.auth.getUser()
+          const cachedProfile = JSON.parse(cached)
+          setUser({
+            id: userId,
+            email: authUser?.email || cachedProfile._email || '',
+            profile: cachedProfile,
+          })
+        } catch {
+          setUser(null)
+        }
+      } else {
+        setUser(null)
+      }
     } else {
       const { data: { user: authUser } } = await supabase.auth.getUser()
       if (authUser) {
-        setUser({
+        const authUserObj: AuthUser = {
           id: authUser.id,
           email: authUser.email!,
           profile: data,
-        })
+        }
+        setUser(authUserObj)
+        // Cache profile for offline use
+        localStorage.setItem(cacheKey, JSON.stringify({ ...data, _email: authUser.email }))
       }
     }
     setLoading(false)

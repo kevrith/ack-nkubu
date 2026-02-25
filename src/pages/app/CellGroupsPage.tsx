@@ -29,18 +29,19 @@ export function CellGroupsPage() {
       .order('name')
 
     if (data) {
-      // Get member counts
-      const groupsWithCounts = await Promise.all(
-        data.map(async (group) => {
-          const { count } = await supabase
-            .from('cell_group_members')
-            .select('*', { count: 'exact', head: true })
-            .eq('cell_group_id', group.id)
-            .eq('is_active', true)
-          return { ...group, member_count: count || 0 }
-        })
-      )
-      setCellGroups(groupsWithCounts)
+      // Fetch all member counts in a single query (avoids N+1)
+      const { data: memberRows } = await supabase
+        .from('cell_group_members')
+        .select('cell_group_id')
+        .in('cell_group_id', data.map(g => g.id))
+        .eq('is_active', true)
+
+      const countMap: Record<string, number> = {}
+      memberRows?.forEach(m => {
+        countMap[m.cell_group_id] = (countMap[m.cell_group_id] || 0) + 1
+      })
+
+      setCellGroups(data.map(g => ({ ...g, member_count: countMap[g.id] || 0 })))
     }
     setLoading(false)
   }

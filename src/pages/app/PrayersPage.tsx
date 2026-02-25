@@ -75,8 +75,8 @@ export function PrayersPage() {
                   <h3 className="text-xl font-semibold mb-2">Download Book of Common Prayer App</h3>
                   <p className="text-blue-100 mb-4">Get the full Anglican liturgy on your phone - works offline!</p>
                   <a
-                    href="/bcp.apk"
-                    download
+                    href="/ACK_Kitabu_Kipya_Cha_Ibada_org.worldliturgy.anglicanchurchkenya/ACK_Kitabu_Kipya_Cha_Ibada_base.apk"
+                    download="ACK_Kitabu_Kipya_Cha_Ibada.apk"
                     className="inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-700 font-semibold rounded-lg hover:bg-blue-50 transition-colors"
                   >
                     <Download className="w-5 h-5" />

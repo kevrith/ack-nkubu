@@ -6,9 +6,29 @@ import { supabase } from '@/lib/supabase'
 
 const YOUTUBE_CHANNEL_URL = 'https://www.youtube.com/@ackstfrancis2776'
 
+interface ServiceTime {
+  time: string
+  language: string
+  venue: string
+}
+
+const FALLBACK_VERSES = [
+  { text: 'For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.', reference: 'John 3:16' },
+  { text: 'Trust in the LORD with all your heart and lean not on your own understanding.', reference: 'Proverbs 3:5' },
+  { text: 'I can do all things through Christ who strengthens me.', reference: 'Philippians 4:13' },
+  { text: 'The LORD is my shepherd, I lack nothing.', reference: 'Psalm 23:1' },
+  { text: 'Be strong and courageous. Do not be afraid; do not be discouraged, for the LORD your God will be with you wherever you go.', reference: 'Joshua 1:9' },
+]
+
+const DEFAULT_SERVICE_TIMES: ServiceTime[] = [
+  { time: '8:30 AM - 9:45 AM', language: 'English', venue: 'Main Church' },
+  { time: '10:00 AM - 12:00 PM', language: 'Kiswahili', venue: 'Main Church' },
+]
+
 export function HomePage() {
   const { user } = useAuth()
   const [dailyVerse, setDailyVerse] = useState({ text: '', reference: '' })
+  const [serviceTimes, setServiceTimes] = useState<ServiceTime[]>(DEFAULT_SERVICE_TIMES)
   const [latestSermon, setLatestSermon] = useState<any>(null)
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([])
   const [recentNotices, setRecentNotices] = useState<any[]>([])
@@ -21,7 +41,7 @@ export function HomePage() {
   async function loadData() {
     setLoading(true)
     await Promise.all([
-      loadDailyVerse(),
+      loadSettings(),
       loadLatestSermon(),
       loadUpcomingEvents(),
       loadRecentNotices()
@@ -29,16 +49,24 @@ export function HomePage() {
     setLoading(false)
   }
 
-  async function loadDailyVerse() {
-    const verses = [
-      { text: 'For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.', reference: 'John 3:16' },
-      { text: 'Trust in the LORD with all your heart and lean not on your own understanding.', reference: 'Proverbs 3:5' },
-      { text: 'I can do all things through Christ who strengthens me.', reference: 'Philippians 4:13' },
-      { text: 'The LORD is my shepherd, I lack nothing.', reference: 'Psalm 23:1' },
-      { text: 'Be strong and courageous. Do not be afraid; do not be discouraged, for the LORD your God will be with you wherever you go.', reference: 'Joshua 1:9' },
-    ]
-    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000)
-    setDailyVerse(verses[dayOfYear % verses.length])
+  async function loadSettings() {
+    const { data } = await supabase.from('cms_settings').select('key, value').in('key', ['daily_verse', 'service_times'])
+    if (data) {
+      data.forEach(row => {
+        if (row.key === 'daily_verse' && row.value?.text) {
+          setDailyVerse({ text: row.value.text, reference: row.value.reference || '' })
+        }
+        if (row.key === 'service_times' && Array.isArray(row.value) && row.value.length) {
+          setServiceTimes(row.value)
+        }
+      })
+    }
+    // Fallback to rotating verse if none set in DB
+    setDailyVerse(prev => {
+      if (prev.text) return prev
+      const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000)
+      return FALLBACK_VERSES[dayOfYear % FALLBACK_VERSES.length]
+    })
   }
 
   async function loadLatestSermon() {
@@ -125,7 +153,7 @@ export function HomePage() {
             <div>
               <h3 className="font-semibold text-navy mb-1">{latestSermon.title}</h3>
               <p className="text-sm text-gray-600 mb-2">{latestSermon.speaker} • {latestSermon.scripture_reference}</p>
-              <Link to={`/sermons/${latestSermon.id}`} className="text-sm text-gold hover:text-gold-600 font-medium">▶ Play Sermon</Link>
+              <Link to="/sermons" className="text-sm text-gold hover:text-gold-600 font-medium">▶ Play Sermon</Link>
             </div>
           </div>
         ) : (
@@ -140,14 +168,12 @@ export function HomePage() {
             <h2 className="text-xl font-playfair text-navy">Sunday Service Times</h2>
           </div>
           <div className="space-y-3">
-            <div className="p-3 border-l-4 border-gold bg-gray-50 rounded">
-              <div className="font-semibold text-navy">8:30 AM - 9:45 AM</div>
-              <div className="text-sm text-gray-600">English Service • Main Church</div>
-            </div>
-            <div className="p-3 border-l-4 border-gold bg-gray-50 rounded">
-              <div className="font-semibold text-navy">10:00 AM - 12:00 PM</div>
-              <div className="text-sm text-gray-600">Kiswahili Service • Main Church</div>
-            </div>
+            {serviceTimes.map((slot, i) => (
+              <div key={i} className="p-3 border-l-4 border-gold bg-gray-50 rounded">
+                <div className="font-semibold text-navy">{slot.time}</div>
+                <div className="text-sm text-gray-600">{slot.language} Service • {slot.venue}</div>
+              </div>
+            ))}
           </div>
         </div>
 
