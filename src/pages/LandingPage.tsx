@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { BookOpen, Users, Heart, Calendar, Bell, Video, HandHeart, Shield, Phone, Mail, MapPin, MessageCircleHeart } from 'lucide-react'
+import { BookOpen, Users, Heart, Calendar, Bell, Video, HandHeart, Shield, Phone, Mail, MapPin, MessageCircleHeart, Bookmark } from 'lucide-react'
 
 const YOUTUBE_CHANNEL_URL = 'https://www.youtube.com/@ackstfrancis2776'
 
@@ -15,6 +15,7 @@ export function LandingPage() {
   const [notices, setNotices] = useState<any[]>([])
   const [sermons, setSermons] = useState<any[]>([])
   const [testimonies, setTestimonies] = useState<any[]>([])
+  const [themes, setThemes] = useState<any[]>([])
   const [serviceTimes, setServiceTimes] = useState<ServiceTime[]>([
     { time: '8:30 AM - 9:45 AM', language: 'English', venue: 'Main Church' },
     { time: '10:00 AM - 12:00 PM', language: 'Kiswahili', venue: 'Main Church' },
@@ -30,6 +31,7 @@ export function LandingPage() {
     loadNotices()
     loadSermons()
     loadTestimonies()
+    loadThemes()
     loadSettings()
   }, [])
 
@@ -68,14 +70,21 @@ export function LandingPage() {
   async function loadTestimonies() {
     const { data } = await supabase
       .from('testimonies')
-      .select(`
-        *,
-        author:profiles!author_id(full_name, avatar_url)
-      `)
+      .select(`*, author:profiles!author_id(full_name, avatar_url)`)
       .eq('status', 'approved')
       .order('created_at', { ascending: false })
       .limit(3)
     setTestimonies(data || [])
+  }
+
+  async function loadThemes() {
+    const { data } = await supabase
+      .from('themes')
+      .select('*')
+      .eq('is_published', true)
+      .order('created_at', { ascending: false })
+      .limit(4)
+    setThemes(data || [])
   }
   return (
     <div className="min-h-screen">
@@ -182,6 +191,52 @@ export function LandingPage() {
           ) : (
             <p className="text-center text-gray-500">No sermons available</p>
           )}
+        </div>
+      </div>
+
+      {/* Themes Section */}
+      <div className="bg-gray-50 py-20">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Bookmark className="w-8 h-8 text-navy" />
+            <h2 className="text-4xl font-playfair text-navy">Our Themes</h2>
+          </div>
+          <p className="text-center text-gray-500 mb-12">Diocesan and parish themes guiding our faith journey</p>
+          {themes.length > 0 ? (
+            <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+              {themes.map((theme) => (
+                <div key={theme.id} className={`bg-white rounded-lg shadow-lg overflow-hidden border-l-4 ${
+                  theme.type === 'diocesan' ? 'border-purple-600' : 'border-navy'
+                }`}>
+                  {theme.image_url && (
+                    <img src={theme.image_url} alt={theme.title} className="w-full h-40 object-cover" />
+                  )}
+                  <div className="p-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                        theme.type === 'diocesan' ? 'bg-purple-100 text-purple-700' : 'bg-navy-50 text-navy'
+                      }`}>
+                        {theme.type === 'diocesan' ? 'Diocesan Theme' : 'Church Theme'}
+                      </span>
+                      <span className="text-xs text-gray-400">{theme.year}</span>
+                    </div>
+                    <h3 className="text-xl font-playfair font-semibold text-navy mb-2">{theme.title}</h3>
+                    {theme.scripture && (
+                      <p className="text-sm italic text-gold-700 bg-gold/10 px-3 py-2 rounded mb-3">"{theme.scripture}"</p>
+                    )}
+                    <p className="text-gray-600 text-sm line-clamp-3">{theme.content}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-gray-500">No themes posted yet.</p>
+          )}
+          <div className="text-center mt-8">
+            <Link to="/themes" className="inline-block px-6 py-3 bg-navy text-white rounded-lg hover:bg-navy-700 font-medium">
+              View All Themes
+            </Link>
+          </div>
         </div>
       </div>
 
