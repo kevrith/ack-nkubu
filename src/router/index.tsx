@@ -51,6 +51,8 @@ import { MakePledgePage } from '@/pages/app/MakePledgePage'
 import { PledgeDetailPage } from '@/pages/app/PledgeDetailPage'
 import { ReferralPage } from '@/pages/app/ReferralPage'
 import { MinistryDetailPage } from '@/pages/app/MinistryDetailPage'
+import { ThemesPage } from '@/pages/app/ThemesPage'
+import { AdminThemesPage } from '@/pages/admin/AdminThemesPage'
 
 export function AppRouter() {
   return (
@@ -359,6 +361,20 @@ export function AppRouter() {
         <Route path="/ministries/:id" element={
           <ProtectedRoute>
             <AppLayout><MinistryDetailPage /></AppLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/themes" element={
+          <ProtectedRoute>
+            <AppLayout><ThemesPage /></AppLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/admin/themes" element={
+          <ProtectedRoute>
+            <RoleGuard requiredRole={['clergy', 'admin']}>
+              <AppLayout><AdminThemesPage /></AppLayout>
+            </RoleGuard>
           </ProtectedRoute>
         } />
 
