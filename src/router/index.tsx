@@ -365,9 +365,7 @@ export function AppRouter() {
         } />
 
         <Route path="/themes" element={
-          <ProtectedRoute>
-            <AppLayout><ThemesPage /></AppLayout>
-          </ProtectedRoute>
+          <AppLayout><ThemesPage /></AppLayout>
         } />
 
         <Route path="/admin/themes" element={
