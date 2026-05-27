@@ -1,4 +1,4 @@
-import { Home, BookOpen, HandHeart, Mic, Cross as CrossIcon, Bell, Calendar, Users, Heart, Settings, BookUser, Shield, Plus, UserCog, Image, Send, Clock, FileEdit, FormInput, User, BellRing, MessageCircleHeart, UsersRound, Briefcase, Church, Bookmark, Music, HeartHandshake } from 'lucide-react'
+import { Home, BookOpen, HandHeart, Mic, Cross as CrossIcon, Bell, Calendar, Users, Heart, Settings, BookUser, Shield, Plus, UserCog, Image, Send, Clock, FileEdit, FormInput, User, BellRing, MessageCircleHeart, UsersRound, Briefcase, Church, Bookmark, Music, HeartHandshake, UserCheck } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { LucideIcon } from 'lucide-react'
@@ -35,6 +35,7 @@ export function MorePage() {
   ]
 
   const leaderItems: MenuItem[] = [
+    { icon: UserCheck, label: 'Members', path: '/members' },
     { icon: BookUser, label: 'Member Directory', path: '/directory' },
   ]
 

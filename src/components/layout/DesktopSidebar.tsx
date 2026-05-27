@@ -1,4 +1,4 @@
-import { Home, BookOpen, Book, HandHeart, Mic, Cross as CrossIcon, Bell, Calendar, Users, Heart, Settings, Plus, Shield, UserCog, BookUser, Image, Send, Clock, FileEdit, FormInput, BarChart2, MessageCircleHeart, UsersRound, Briefcase, Church, Bookmark, Music } from 'lucide-react'
+import { Home, BookOpen, Book, HandHeart, Mic, Cross as CrossIcon, Bell, Calendar, Users, Heart, Settings, Plus, Shield, UserCog, BookUser, Image, Send, Clock, FileEdit, FormInput, BarChart2, MessageCircleHeart, UsersRound, Briefcase, Church, Bookmark, Music, UserCheck } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
@@ -50,16 +50,28 @@ export function DesktopSidebar() {
         })}
 
         {(user?.profile.role === 'leader' || user?.profile.role === 'clergy' || user?.profile.role === 'admin') && (
-          <Link
-            to="/directory"
-            className={cn(
-              'flex items-center gap-3 px-6 py-3 transition-colors',
-              location.pathname === '/directory' ? 'bg-navy-800 border-l-4 border-gold text-gold' : 'hover:bg-navy-700'
-            )}
-          >
-            <BookUser className="w-5 h-5" />
-            <span>Directory</span>
-          </Link>
+          <>
+            <Link
+              to="/members"
+              className={cn(
+                'flex items-center gap-3 px-6 py-3 transition-colors',
+                location.pathname === '/members' ? 'bg-navy-800 border-l-4 border-gold text-gold' : 'hover:bg-navy-700'
+              )}
+            >
+              <UserCheck className="w-5 h-5" />
+              <span>Members</span>
+            </Link>
+            <Link
+              to="/directory"
+              className={cn(
+                'flex items-center gap-3 px-6 py-3 transition-colors',
+                location.pathname === '/directory' ? 'bg-navy-800 border-l-4 border-gold text-gold' : 'hover:bg-navy-700'
+              )}
+            >
+              <BookUser className="w-5 h-5" />
+              <span>Directory</span>
+            </Link>
+          </>
         )}
 
         {user?.profile.role === 'admin' && (

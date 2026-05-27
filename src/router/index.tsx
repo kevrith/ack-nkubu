@@ -24,6 +24,7 @@ const GivingPage = lazy(() => import('@/pages/app/GivingPage').then(m => ({ defa
 const PastoralCarePage = lazy(() => import('@/pages/app/PastoralCarePage').then(m => ({ default: m.PastoralCarePage })))
 const ProfilePage = lazy(() => import('@/pages/app/ProfilePage').then(m => ({ default: m.ProfilePage })))
 const MemberDirectory = lazy(() => import('@/pages/app/MemberDirectory').then(m => ({ default: m.MemberDirectory })))
+const MembersPage = lazy(() => import('@/pages/app/MembersPage').then(m => ({ default: m.MembersPage })))
 const NotificationsPage = lazy(() => import('@/pages/app/NotificationsPage').then(m => ({ default: m.NotificationsPage })))
 const BCPPage = lazy(() => import('@/pages/app/BCPPage').then(m => ({ default: m.BCPPage })))
 const TestimoniesPage = lazy(() => import('@/pages/app/TestimoniesPage').then(m => ({ default: m.TestimoniesPage })))
@@ -158,6 +159,14 @@ export function AppRouter() {
             <ProtectedRoute>
               <RoleGuard requiredRole={['leader', 'clergy', 'admin']}>
                 <AppLayout><MemberDirectory /></AppLayout>
+              </RoleGuard>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/members" element={
+            <ProtectedRoute>
+              <RoleGuard requiredRole={['leader', 'clergy', 'admin']}>
+                <AppLayout><MembersPage /></AppLayout>
               </RoleGuard>
             </ProtectedRoute>
           } />
