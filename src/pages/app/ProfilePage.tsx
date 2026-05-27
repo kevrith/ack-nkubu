@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { User, Phone, Users, BookOpen, LogOut, Save, Camera, Gift } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
@@ -8,6 +8,11 @@ import { BibleVersion } from '@/types/bible'
 import { AVAILABLE_VERSIONS } from '@/services/bible.service'
 import { MediaUploader } from '@/components/shared/MediaUploader'
 import { Link } from 'react-router-dom'
+
+interface CellGroup {
+  id: string
+  name: string
+}
 
 const versionInfo: Record<BibleVersion, string> = {
   NIV: 'New International Version',
@@ -21,7 +26,6 @@ export function ProfilePage() {
   const [editing, setEditing] = useState(false)
   const [fullName, setFullName] = useState(user?.profile.full_name || '')
   const [phone, setPhone] = useState(user?.profile.phone || '')
-  const [cellGroup, setCellGroup] = useState(user?.profile.cell_group || '')
   const [preferredBibleVersion, setPreferredBibleVersion] = useState<BibleVersion>(() => {
     const saved = user?.profile.preferred_bible_version
     return AVAILABLE_VERSIONS.includes(saved as BibleVersion) ? (saved as BibleVersion) : 'NIV'
@@ -30,30 +34,78 @@ export function ProfilePage() {
   const [success, setSuccess] = useState(false)
   const [showUploader, setShowUploader] = useState(false)
   const [avatarUrl, setAvatarUrl] = useState(user?.profile.avatar_url || '')
+  const [cellGroups, setCellGroups] = useState<CellGroup[]>([])
+  const [selectedGroupId, setSelectedGroupId] = useState('')
+
+  useEffect(() => {
+    supabase.from('cell_groups').select('id, name').eq('is_active', true).order('name')
+      .then(({ data }) => setCellGroups(data || []))
+
+    if (user) {
+      supabase.from('cell_group_members')
+        .select('cell_group_id')
+        .eq('member_id', user.id)
+        .eq('is_active', true)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data?.cell_group_id) setSelectedGroupId(data.cell_group_id)
+        })
+    }
+  }, [user?.id])
 
   async function handleSave() {
     if (!user) return
 
     setLoading(true)
+
+    const selectedGroup = cellGroups.find(g => g.id === selectedGroupId)
+
     const { error } = await supabase
       .from('profiles')
       .update({
         full_name: fullName,
         phone: normalizeKenyanPhone(phone) || null,
-        cell_group: cellGroup || null,
+        cell_group: selectedGroup?.name || null,
         preferred_bible_version: preferredBibleVersion,
         avatar_url: avatarUrl || null,
       })
       .eq('id', user.id)
 
     if (!error) {
+      // Deactivate all existing cell group memberships
+      await supabase.from('cell_group_members')
+        .update({ is_active: false })
+        .eq('member_id', user.id)
+
+      // Add to newly selected group (if any)
+      if (selectedGroupId) {
+        const { data: existing } = await supabase
+          .from('cell_group_members')
+          .select('id')
+          .eq('cell_group_id', selectedGroupId)
+          .eq('member_id', user.id)
+          .maybeSingle()
+
+        if (existing) {
+          await supabase.from('cell_group_members')
+            .update({ is_active: true })
+            .eq('id', existing.id)
+        } else {
+          await supabase.from('cell_group_members').insert({
+            cell_group_id: selectedGroupId,
+            member_id: user.id,
+            is_active: true,
+          })
+        }
+      }
+
       setUser({
         ...user,
         profile: {
           ...user.profile,
           full_name: fullName,
           phone: normalizeKenyanPhone(phone) || null,
-          cell_group: cellGroup || null,
+          cell_group: selectedGroup?.name || null,
           preferred_bible_version: preferredBibleVersion,
           avatar_url: avatarUrl || null,
         },
@@ -154,14 +206,17 @@ export function ProfilePage() {
               <Users className="w-4 h-4" />
               Cell Group
             </label>
-            <input
-              type="text"
-              value={cellGroup}
-              onChange={(e) => setCellGroup(e.target.value)}
+            <select
+              value={selectedGroupId}
+              onChange={(e) => setSelectedGroupId(e.target.value)}
               disabled={!editing}
-              placeholder="e.g., Westlands Cell Group"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-navy focus:border-transparent disabled:bg-gray-50"
-            />
+            >
+              <option value="">Not in a cell group</option>
+              {cellGroups.map(g => (
+                <option key={g.id} value={g.id}>{g.name}</option>
+              ))}
+            </select>
           </div>
 
           <div>
