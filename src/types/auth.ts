@@ -16,7 +16,7 @@ export interface Profile {
   updated_at: string
 }
 
-export type BibleVersion = 'NIV' | 'NLT' | 'KJV' | 'NRSV' | 'NKJV'
+export type BibleVersion = 'NIV' | 'NLT' | 'KJV'
 
 export interface AuthUser {
   id: string

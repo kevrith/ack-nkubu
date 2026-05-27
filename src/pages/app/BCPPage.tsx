@@ -1,7 +1,8 @@
 import { BCPReader } from '@/components/prayers/BCPReader'
 import { TodaysCollect } from '@/components/prayers/TodaysCollect'
 import { useState } from 'react'
-import { Book, Star, Download, ExternalLink, Smartphone, AlertTriangle } from 'lucide-react'
+import { Book, Star, Download, ExternalLink, Smartphone, AlertTriangle, Music } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 type Tab = 'reader' | 'today'
 
@@ -68,6 +69,20 @@ export function BCPPage() {
       <div className="mb-4 space-y-2">
         <OfficialAppBanner />
         <ContentDisclaimer />
+        {/* Songs link */}
+        <Link
+          to="/songs"
+          className="flex items-center gap-3 bg-navy/5 border border-navy/10 rounded-xl px-4 py-3 hover:bg-navy/10 transition-colors"
+        >
+          <div className="w-8 h-8 bg-navy rounded-lg flex items-center justify-center flex-shrink-0">
+            <Music className="w-4 h-4 text-gold" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-navy">Tenzi za Rohoni</p>
+            <p className="text-xs text-gray-500">138 ACK hymns — searchable by title or number</p>
+          </div>
+          <ExternalLink className="w-4 h-4 text-gray-400" />
+        </Link>
       </div>
 
       {/* Tabs */}

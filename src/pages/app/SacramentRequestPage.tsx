@@ -1,16 +1,34 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Church, Upload, Calendar, FileText } from 'lucide-react'
+import { Church, Upload, FileText, CheckCircle, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { SacramentType } from '@/types/sacrament'
 import { MediaUploader } from '@/components/shared/MediaUploader'
+
+function nullifyEmptyDates<T extends Record<string, unknown>>(obj: T): T {
+  const dateFields = [
+    'baptism_candidate_dob',
+    'confirmation_candidate_dob', 'confirmation_baptism_date', 'confirmation_preferred_date',
+    'wedding_groom_dob', 'wedding_bride_dob', 'wedding_preferred_date',
+    'funeral_deceased_dob', 'funeral_deceased_dod', 'funeral_preferred_date',
+  ]
+  const result = { ...obj }
+  for (const field of dateFields) {
+    if (field in result && result[field] === '') {
+      (result as Record<string, unknown>)[field] = null
+    }
+  }
+  return result
+}
 
 export function SacramentRequestPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [type, setType] = useState<SacramentType>('baptism')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [submitted, setSubmitted] = useState(false)
   const [showUploader, setShowUploader] = useState(false)
   const [documents, setDocuments] = useState<string[]>([])
 
@@ -19,6 +37,13 @@ export function SacramentRequestPage() {
     phone: user?.profile.phone || '',
     email: user?.email || '',
     
+    confirmation_candidate_name: '',
+    confirmation_candidate_dob: '',
+    confirmation_baptism_date: '',
+    confirmation_baptism_parish: '',
+    confirmation_sponsor_name: '',
+    confirmation_preferred_date: '',
+
     baptism_candidate_name: '',
     baptism_candidate_dob: '',
     baptism_father_name: '',
@@ -52,26 +77,67 @@ export function SacramentRequestPage() {
     if (!user) return
 
     setLoading(true)
-    const { data, error } = await supabase
+    setError(null)
+
+    const payload = nullifyEmptyDates({
+      user_id: user.id,
+      sacrament_type: type,
+      ...formData,
+      documents: documents.map(url => ({ url }))
+    })
+
+    const { data, error: insertError } = await supabase
       .from('sacrament_requests')
-      .insert({
-        user_id: user.id,
-        sacrament_type: type,
-        ...formData,
-        documents: documents.map(url => ({ url }))
-      })
+      .insert(payload)
       .select()
       .single()
 
-    if (!error && data) {
-      await supabase.from('sacrament_request_activity').insert({
-        request_id: data.id,
-        user_id: user.id,
-        action: 'Request submitted'
-      })
-      navigate('/sacraments')
+    if (insertError || !data) {
+      setError(insertError?.message ?? 'Failed to submit request. Please try again.')
+      setLoading(false)
+      return
     }
+
+    await supabase.from('sacrament_request_activity').insert({
+      request_id: data.id,
+      user_id: user.id,
+      action: 'Request submitted'
+    })
+
+    setSubmitted(true)
     setLoading(false)
+  }
+
+  if (submitted) {
+    return (
+      <div className="max-w-3xl mx-auto">
+        <div className="bg-white rounded-lg shadow p-10 text-center space-y-4">
+          <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
+          <h2 className="text-2xl font-playfair text-navy">Request Submitted</h2>
+          <p className="text-gray-600">
+            Your <span className="font-semibold capitalize">{type}</span> request has been received.
+            Our clergy team will review it and reach out to you shortly.
+          </p>
+          <div className="flex gap-3 justify-center pt-2">
+            <button
+              onClick={() => navigate('/sacraments')}
+              className="px-6 py-2 bg-navy text-white rounded-lg hover:bg-navy-600"
+            >
+              View My Requests
+            </button>
+            <button
+              onClick={() => {
+                setSubmitted(false)
+                setDocuments([])
+              }}
+              className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              Submit Another
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -82,12 +148,17 @@ export function SacramentRequestPage() {
       </div>
 
       <div className="bg-white rounded-lg shadow p-6">
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Type Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Request Type</label>
-            <div className="grid grid-cols-3 gap-3">
-              {(['baptism', 'wedding', 'funeral'] as SacramentType[]).map(t => (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {(['baptism', 'confirmation', 'wedding', 'funeral'] as SacramentType[]).map(t => (
                 <button
                   key={t}
                   type="button"
@@ -189,6 +260,74 @@ export function SacramentRequestPage() {
                     value={formData.baptism_godparent2}
                     onChange={e => setFormData({...formData, baptism_godparent2: e.target.value})}
                     placeholder="Second godparent name (optional)"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Confirmation Fields */}
+          {type === 'confirmation' && (
+            <div className="space-y-4 border-t pt-4">
+              <h3 className="font-semibold text-navy">Confirmation Details</h3>
+              <p className="text-sm text-gray-500">For candidates who have completed catechism and are ready to be confirmed by the Bishop.</p>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Candidate Name *</label>
+                  <input
+                    type="text"
+                    value={formData.confirmation_candidate_name}
+                    onChange={e => setFormData({...formData, confirmation_candidate_name: e.target.value})}
+                    required
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth *</label>
+                  <input
+                    type="date"
+                    value={formData.confirmation_candidate_dob}
+                    onChange={e => setFormData({...formData, confirmation_candidate_dob: e.target.value})}
+                    required
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Date of Baptism</label>
+                  <input
+                    type="date"
+                    value={formData.confirmation_baptism_date}
+                    onChange={e => setFormData({...formData, confirmation_baptism_date: e.target.value})}
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Parish of Baptism</label>
+                  <input
+                    type="text"
+                    value={formData.confirmation_baptism_parish}
+                    onChange={e => setFormData({...formData, confirmation_baptism_parish: e.target.value})}
+                    placeholder="e.g. All Saints' Cathedral"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Confirmation Sponsor</label>
+                  <input
+                    type="text"
+                    value={formData.confirmation_sponsor_name}
+                    onChange={e => setFormData({...formData, confirmation_sponsor_name: e.target.value})}
+                    placeholder="Sponsor's full name"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Confirmation Date</label>
+                  <input
+                    type="date"
+                    value={formData.confirmation_preferred_date}
+                    onChange={e => setFormData({...formData, confirmation_preferred_date: e.target.value})}
                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy"
                   />
                 </div>
@@ -388,8 +527,15 @@ export function SacramentRequestPage() {
               <div className="mb-3 space-y-2">
                 {documents.map((url, i) => (
                   <div key={i} className="flex items-center gap-2 text-sm text-gray-600">
-                    <FileText className="w-4 h-4" />
-                    <span className="truncate">{url.split('/').pop()}</span>
+                    <FileText className="w-4 h-4 shrink-0" />
+                    <span className="truncate flex-1">{url.split('/').pop()}</span>
+                    <button
+                      type="button"
+                      onClick={() => setDocuments(documents.filter((_, j) => j !== i))}
+                      className="text-gray-400 hover:text-red-500"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
                 ))}
               </div>

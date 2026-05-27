@@ -1,6 +1,14 @@
-import { Home, BookOpen, HandHeart, Mic, Cross as CrossIcon, Bell, Calendar, Users, Heart, Settings, BookUser, Shield, Plus, UserCog, Image, Send, Clock, FileEdit, FormInput, User, BellRing, MessageCircleHeart, UsersRound, Briefcase, Church, Bookmark } from 'lucide-react'
+import { Home, BookOpen, HandHeart, Mic, Cross as CrossIcon, Bell, Calendar, Users, Heart, Settings, BookUser, Shield, Plus, UserCog, Image, Send, Clock, FileEdit, FormInput, User, BellRing, MessageCircleHeart, UsersRound, Briefcase, Church, Bookmark, Music, HeartHandshake } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
+import { LucideIcon } from 'lucide-react'
+
+interface MenuItem {
+  icon: LucideIcon
+  label: string
+  path: string
+  adminOnly?: boolean
+}
 
 export function MorePage() {
   const { user } = useAuth()
@@ -16,20 +24,21 @@ export function MorePage() {
     { icon: Heart, label: 'Giving', path: '/giving' },
     { icon: Users, label: 'Community', path: '/community' },
     { icon: MessageCircleHeart, label: 'Testimonies', path: '/testimonies' },
+    { icon: Music, label: 'Songs', path: '/songs' },
     { icon: Bookmark, label: 'Themes', path: '/themes' },
     { icon: Briefcase, label: 'Ministries', path: '/ministries' },
     { icon: UsersRound, label: 'Cell Groups', path: '/cell-groups' },
     { icon: Church, label: 'Sacraments', path: '/sacraments' },
-    { icon: HandHeart, label: 'Pastoral Care', path: '/pastoral-care' },
+    { icon: HeartHandshake, label: 'Pastoral Care', path: '/pastoral-care' },
     { icon: BellRing, label: 'Notifications', path: '/notifications' },
     { icon: User, label: 'Profile', path: '/profile' },
   ]
 
-  const leaderItems = [
+  const leaderItems: MenuItem[] = [
     { icon: BookUser, label: 'Member Directory', path: '/directory' },
   ]
 
-  const adminItems = [
+  const adminItems: MenuItem[] = [
     { icon: Settings, label: 'Admin Dashboard', path: '/admin' },
     { icon: Plus, label: 'Add Content', path: '/admin/content' },
     { icon: UserCog, label: 'Manage Users', path: '/admin/users', adminOnly: true },
@@ -42,6 +51,7 @@ export function MorePage() {
     { icon: Shield, label: 'Pastoral Care Dashboard', path: '/clergy/pastoral-care' },
     { icon: Church, label: 'Sacrament Requests', path: '/clergy/sacraments' },
     { icon: Bookmark, label: 'Manage Themes', path: '/admin/themes' },
+    { icon: Music, label: 'English Hymns', path: '/admin/hymns' },
   ]
 
   const isLeader = ['leader', 'clergy', 'admin'].includes(user?.profile.role || '')

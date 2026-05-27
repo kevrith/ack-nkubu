@@ -1,4 +1,4 @@
-import { Home, BookOpen, Book, HandHeart, Mic, Cross as CrossIcon, Bell, Calendar, Users, Heart, Settings, Plus, Shield, UserCog, BookUser, Image, Send, Clock, FileEdit, FormInput, BarChart2, MessageCircleHeart, UsersRound, Briefcase, Church, Bookmark } from 'lucide-react'
+import { Home, BookOpen, Book, HandHeart, Mic, Cross as CrossIcon, Bell, Calendar, Users, Heart, Settings, Plus, Shield, UserCog, BookUser, Image, Send, Clock, FileEdit, FormInput, BarChart2, MessageCircleHeart, UsersRound, Briefcase, Church, Bookmark, Music } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
@@ -7,6 +7,7 @@ const navItems = [
   { icon: Home, label: 'Home', path: '/home' },
   { icon: BookOpen, label: 'Bible', path: '/bible' },
   { icon: Book, label: 'Book of Common Prayer', path: '/bcp' },
+  { icon: Music, label: 'Songs (Tenzi)', path: '/songs' },
   { icon: HandHeart, label: 'Prayers', path: '/prayers' },
   { icon: Mic, label: 'Sermons', path: '/sermons' },
   { icon: CrossIcon, label: "Pastor's Corner", path: '/pastors-corner' },
@@ -171,6 +172,16 @@ export function DesktopSidebar() {
                 >
                   <Bookmark className="w-5 h-5" />
                   <span>Themes</span>
+                </Link>
+                <Link
+                  to="/admin/hymns"
+                  className={cn(
+                    'flex items-center gap-3 px-6 py-3 transition-colors',
+                    location.pathname === '/admin/hymns' ? 'bg-navy-800 border-l-4 border-gold text-gold' : 'hover:bg-navy-700'
+                  )}
+                >
+                  <Music className="w-5 h-5" />
+                  <span>English Hymns</span>
                 </Link>
                 <Link
                   to="/admin/notifications"

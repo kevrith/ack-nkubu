@@ -65,7 +65,7 @@ export function SacramentsPage() {
         <div className="bg-white rounded-lg shadow p-12 text-center">
           <Church className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-700 mb-2">No Requests Yet</h3>
-          <p className="text-gray-500 mb-6">Submit a request for baptism, wedding, or funeral services</p>
+          <p className="text-gray-500 mb-6">Submit a request for baptism, confirmation, wedding, or funeral services</p>
           <Link
             to="/sacraments/new"
             className="inline-flex items-center gap-2 px-6 py-3 bg-navy text-white rounded-lg hover:bg-navy-600"
@@ -97,6 +97,9 @@ export function SacramentsPage() {
                 
                 {request.sacrament_type === 'baptism' && (
                   <p className="text-gray-700">Candidate: {request.baptism_candidate_name}</p>
+                )}
+                {request.sacrament_type === 'confirmation' && (
+                  <p className="text-gray-700">Candidate: {request.confirmation_candidate_name}</p>
                 )}
                 {request.sacrament_type === 'wedding' && (
                   <p className="text-gray-700">{request.wedding_groom_name} & {request.wedding_bride_name}</p>

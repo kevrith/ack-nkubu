@@ -1,4 +1,4 @@
-export type SacramentType = 'baptism' | 'wedding' | 'funeral'
+export type SacramentType = 'baptism' | 'confirmation' | 'wedding' | 'funeral'
 
 export type SacramentRequestStatus = 
   | 'pending' 
@@ -19,6 +19,14 @@ export interface SacramentRequest {
   phone?: string
   email?: string
   
+  // Confirmation specific
+  confirmation_candidate_name?: string
+  confirmation_candidate_dob?: string
+  confirmation_baptism_date?: string
+  confirmation_baptism_parish?: string
+  confirmation_sponsor_name?: string
+  confirmation_preferred_date?: string
+
   // Baptism specific
   baptism_candidate_name?: string
   baptism_candidate_dob?: string

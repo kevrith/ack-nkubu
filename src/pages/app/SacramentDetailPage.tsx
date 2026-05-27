@@ -92,6 +92,20 @@ export function SacramentDetailPage() {
           <Field label="Phone" value={request.phone} />
           <Field label="Email" value={request.email} />
 
+          {request.sacrament_type === 'confirmation' && (
+            <>
+              <div className="border-t pt-4">
+                <p className="text-sm font-semibold text-navy mb-3">Confirmation Details</p>
+              </div>
+              <Field label="Candidate Name" value={request.confirmation_candidate_name} />
+              <Field label="Date of Birth" value={request.confirmation_candidate_dob} />
+              <Field label="Date of Baptism" value={request.confirmation_baptism_date} />
+              <Field label="Parish of Baptism" value={request.confirmation_baptism_parish} />
+              <Field label="Confirmation Sponsor" value={request.confirmation_sponsor_name} />
+              <Field label="Preferred Date" value={request.confirmation_preferred_date} />
+            </>
+          )}
+
           {request.sacrament_type === 'baptism' && (
             <>
               <div className="border-t pt-4">
