@@ -6,12 +6,19 @@ import { Users, Calendar, MapPin, Clock, Bell, Plus, MessageCircle, X, Settings 
 import { CellGroup, CellGroupMember, CellGroupAnnouncement, CellGroupMeeting } from '@/types/testimony'
 import { shareToWhatsAppGroup } from '@/lib/whatsapp'
 
+interface ManualCellMember {
+  id: string
+  full_name: string
+  phone: string | null
+}
+
 export function CellGroupDetailPage() {
   const { id } = useParams()
   const { user } = useAuth()
   const navigate = useNavigate()
   const [group, setGroup] = useState<CellGroup | null>(null)
   const [members, setMembers] = useState<CellGroupMember[]>([])
+  const [manualMembers, setManualMembers] = useState<ManualCellMember[]>([])
   const [announcements, setAnnouncements] = useState<CellGroupAnnouncement[]>([])
   const [meetings, setMeetings] = useState<CellGroupMeeting[]>([])
   const [activeTab, setActiveTab] = useState<'announcements' | 'members' | 'meetings'>('announcements')
@@ -36,6 +43,7 @@ export function CellGroupDetailPage() {
     if (id) {
       loadGroup()
       loadMembers()
+      loadManualMembers()
       loadAnnouncements()
       loadMeetings()
     }
@@ -65,6 +73,16 @@ export function CellGroupDetailPage() {
       .eq('is_active', true)
       .order('joined_at')
     setMembers(data || [])
+  }
+
+  async function loadManualMembers() {
+    const { data } = await supabase
+      .from('manual_members')
+      .select('id, full_name, phone')
+      .eq('cell_group_id', id)
+      .eq('is_active', true)
+      .order('full_name')
+    setManualMembers(data || [])
   }
 
   async function loadAnnouncements() {
@@ -245,7 +263,7 @@ export function CellGroupDetailPage() {
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              Members ({members.length})
+              Members ({members.length + manualMembers.length})
             </button>
             <button
               onClick={() => setActiveTab('meetings')}
@@ -313,7 +331,7 @@ export function CellGroupDetailPage() {
                       {member.member?.full_name?.[0]}
                     </div>
                   )}
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <div className="font-medium text-navy">{member.member?.full_name}</div>
                     <div className="text-xs text-gray-500">
                       Joined {new Date(member.joined_at).toLocaleDateString()}
@@ -321,6 +339,26 @@ export function CellGroupDetailPage() {
                   </div>
                 </div>
               ))}
+              {manualMembers.map((member) => (
+                <div key={`manual-${member.id}`} className="flex items-center gap-3 p-3 border border-amber-100 bg-amber-50/30 rounded-lg">
+                  <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center font-semibold flex-shrink-0">
+                    {member.full_name[0]}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-navy">{member.full_name}</div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {member.phone && <span className="text-xs text-gray-500">{member.phone}</span>}
+                      <span className="text-xs px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded-full font-medium">Manual</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {members.length === 0 && manualMembers.length === 0 && (
+                <div className="col-span-2 text-center py-12 text-gray-500">
+                  <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p>No members yet</p>
+                </div>
+              )}
             </div>
           )}
 

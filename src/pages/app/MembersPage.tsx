@@ -8,6 +8,11 @@ import { useAuth } from '@/hooks/useAuth'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+interface CellGroup {
+  id: string
+  name: string
+}
+
 interface AppMember {
   source: 'app'
   id: string
@@ -29,7 +34,8 @@ interface ManualMember {
   phone: string | null
   email: string | null
   gender: string | null
-  cell_group: string | null
+  cell_group_id: string | null
+  cell_group_name: string | null  // resolved from join
   membership_number: string | null
   date_joined: string | null
   address: string | null
@@ -57,7 +63,7 @@ const ROLE_COLORS: Record<string, string> = {
 
 const EMPTY_FORM = {
   full_name: '', phone: '', email: '', gender: '',
-  cell_group: '', membership_number: '', date_joined: '',
+  cell_group_id: '', membership_number: '', date_joined: '',
   address: '', notes: '', is_active: true,
 }
 
@@ -65,10 +71,15 @@ function initials(name: string) {
   return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
 }
 
+function memberCellGroup(member: Member): string | null {
+  if (member.source === 'app') return (member as AppMember).cell_group
+  return (member as ManualMember).cell_group_name
+}
+
 // ─── Add Member Modal ─────────────────────────────────────────────────────────
 
 function AddMemberModal({ cellGroups, onSave, onClose }: {
-  cellGroups: string[]
+  cellGroups: CellGroup[]
   onSave: (m: ManualMember) => void
   onClose: () => void
 }) {
@@ -89,7 +100,7 @@ function AddMemberModal({ cellGroups, onSave, onClose }: {
       phone: form.phone.trim() || null,
       email: form.email.trim() || null,
       gender: form.gender || null,
-      cell_group: form.cell_group || null,
+      cell_group_id: form.cell_group_id || null,
       membership_number: form.membership_number.trim() || null,
       date_joined: form.date_joined || null,
       address: form.address.trim() || null,
@@ -97,9 +108,18 @@ function AddMemberModal({ cellGroups, onSave, onClose }: {
       is_active: form.is_active,
       added_by: user?.id,
     }
-    const { data, error: err } = await supabase.from('manual_members').insert(payload).select().single()
+    const { data, error: err } = await supabase
+      .from('manual_members')
+      .insert(payload)
+      .select('*, cell_group:cell_groups(name)')
+      .single()
     if (err) { setError(err.message); setSaving(false); return }
-    onSave({ source: 'manual', ...data })
+    const saved: ManualMember = {
+      source: 'manual',
+      ...data,
+      cell_group_name: data.cell_group?.name ?? null,
+    }
+    onSave(saved)
     setSaving(false)
   }
 
@@ -121,95 +141,92 @@ function AddMemberModal({ cellGroups, onSave, onClose }: {
         <div className="px-5 py-4 space-y-4">
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
 
-          <div className="grid grid-cols-1 gap-4">
-            {/* Full Name */}
+          {/* Full Name */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Full Name *</label>
+            <input value={form.full_name} onChange={e => set('full_name', e.target.value)}
+              placeholder="e.g. Jane Mwangi"
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20" />
+          </div>
+
+          {/* Phone + Gender */}
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Full Name *</label>
-              <input value={form.full_name} onChange={e => set('full_name', e.target.value)}
-                placeholder="e.g. Jane Mwangi"
+              <label className="block text-xs font-medium text-gray-600 mb-1">Phone</label>
+              <input value={form.phone} onChange={e => set('phone', e.target.value)}
+                placeholder="07xx xxx xxx"
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20" />
             </div>
-
-            {/* Phone + Gender */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Phone</label>
-                <input value={form.phone} onChange={e => set('phone', e.target.value)}
-                  placeholder="07xx xxx xxx"
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Gender</label>
-                <select value={form.gender} onChange={e => set('gender', e.target.value)}
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy/20">
-                  <option value="">Select</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Email */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Email <span className="text-gray-400 font-normal">(optional)</span></label>
-              <input type="email" value={form.email} onChange={e => set('email', e.target.value)}
-                placeholder="jane@example.com"
+              <label className="block text-xs font-medium text-gray-600 mb-1">Gender</label>
+              <select value={form.gender} onChange={e => set('gender', e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy/20">
+                <option value="">Select</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Email <span className="text-gray-400 font-normal">(optional)</span></label>
+            <input type="email" value={form.email} onChange={e => set('email', e.target.value)}
+              placeholder="jane@example.com"
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20" />
+          </div>
+
+          {/* Cell Group — real dropdown */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Cell Group</label>
+            <select value={form.cell_group_id} onChange={e => set('cell_group_id', e.target.value)}
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy/20">
+              <option value="">None / Unassigned</option>
+              {cellGroups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+            </select>
+            <p className="text-xs text-gray-400 mt-1">They will appear in the cell group's member list.</p>
+          </div>
+
+          {/* Membership No + Date Joined */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Membership No.</label>
+              <input value={form.membership_number} onChange={e => set('membership_number', e.target.value)}
+                placeholder="e.g. ACK-001"
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20" />
             </div>
-
-            {/* Cell Group + Membership No */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Cell Group</label>
-                <input value={form.cell_group} onChange={e => set('cell_group', e.target.value)}
-                  list="cell-group-list"
-                  placeholder="Select or type"
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20" />
-                <datalist id="cell-group-list">
-                  {cellGroups.map(g => <option key={g} value={g} />)}
-                </datalist>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Membership No.</label>
-                <input value={form.membership_number} onChange={e => set('membership_number', e.target.value)}
-                  placeholder="e.g. ACK-001"
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20" />
-              </div>
-            </div>
-
-            {/* Date Joined */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Date Joined</label>
               <input type="date" value={form.date_joined} onChange={e => set('date_joined', e.target.value)}
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy/20" />
             </div>
-
-            {/* Address */}
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Address <span className="text-gray-400 font-normal">(optional)</span></label>
-              <input value={form.address} onChange={e => set('address', e.target.value)}
-                placeholder="e.g. Meru Town"
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20" />
-            </div>
-
-            {/* Notes */}
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Notes <span className="text-gray-400 font-normal">(optional)</span></label>
-              <textarea value={form.notes} onChange={e => set('notes', e.target.value)}
-                rows={2} placeholder="Any additional notes…"
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 resize-none" />
-            </div>
-
-            {/* Active toggle */}
-            <label className="flex items-center gap-3 cursor-pointer">
-              <div onClick={() => set('is_active', !form.is_active)}
-                className={`relative w-10 h-5 rounded-full transition-colors ${form.is_active ? 'bg-green-500' : 'bg-gray-300'}`}>
-                <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.is_active ? 'translate-x-5' : ''}`} />
-              </div>
-              <span className="text-sm font-medium text-gray-700">Mark as Active</span>
-            </label>
           </div>
+
+          {/* Address */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Address <span className="text-gray-400 font-normal">(optional)</span></label>
+            <input value={form.address} onChange={e => set('address', e.target.value)}
+              placeholder="e.g. Meru Town"
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20" />
+          </div>
+
+          {/* Notes */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Notes <span className="text-gray-400 font-normal">(optional)</span></label>
+            <textarea value={form.notes} onChange={e => set('notes', e.target.value)}
+              rows={2} placeholder="Any additional notes…"
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 resize-none" />
+          </div>
+
+          {/* Active toggle */}
+          <label className="flex items-center gap-3 cursor-pointer">
+            <div onClick={() => set('is_active', !form.is_active)}
+              className={`relative w-10 h-5 rounded-full transition-colors ${form.is_active ? 'bg-green-500' : 'bg-gray-300'}`}>
+              <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.is_active ? 'translate-x-5' : ''}`} />
+            </div>
+            <span className="text-sm font-medium text-gray-700">Mark as Active</span>
+          </label>
         </div>
 
         {/* Footer */}
@@ -235,6 +252,7 @@ export function MembersPage() {
   const { user } = useAuth()
   const [appMembers, setAppMembers] = useState<AppMember[]>([])
   const [manualMembers, setManualMembers] = useState<ManualMember[]>([])
+  const [cellGroups, setCellGroups] = useState<CellGroup[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
@@ -250,12 +268,22 @@ export function MembersPage() {
   useEffect(() => { fetchAll() }, [])
 
   async function fetchAll() {
-    const [{ data: app }, { data: manual }] = await Promise.all([
-      supabase.from('profiles').select('id, full_name, phone, avatar_url, role, cell_group, membership_number, date_joined, is_active, created_at').order('full_name'),
-      supabase.from('manual_members').select('id, full_name, phone, email, gender, cell_group, membership_number, date_joined, address, is_active, notes, created_at').order('full_name'),
+    const [{ data: app }, { data: manual }, { data: groups }] = await Promise.all([
+      supabase.from('profiles')
+        .select('id, full_name, phone, avatar_url, role, cell_group, membership_number, date_joined, is_active, created_at')
+        .order('full_name'),
+      supabase.from('manual_members')
+        .select('id, full_name, phone, email, gender, cell_group_id, cell_group:cell_groups(name), membership_number, date_joined, address, is_active, notes, created_at')
+        .order('full_name'),
+      supabase.from('cell_groups').select('id, name').order('name'),
     ])
     setAppMembers((app || []).map(m => ({ source: 'app' as const, ...m })))
-    setManualMembers((manual || []).map(m => ({ source: 'manual' as const, ...m })))
+    setManualMembers((manual || []).map((m: any) => ({
+      source: 'manual' as const,
+      ...m,
+      cell_group_name: m.cell_group?.name ?? null,
+    })))
+    setCellGroups(groups || [])
     setLoading(false)
   }
 
@@ -271,9 +299,10 @@ export function MembersPage() {
     setTogglingId(null)
   }
 
-  const allMembers: Member[] = useMemo(() => [...appMembers, ...manualMembers].sort((a, b) => a.full_name.localeCompare(b.full_name)), [appMembers, manualMembers])
-
-  const cellGroups = useMemo(() => Array.from(new Set(allMembers.map(m => m.cell_group).filter(Boolean))).sort() as string[], [allMembers])
+  const allMembers: Member[] = useMemo(
+    () => [...appMembers, ...manualMembers].sort((a, b) => a.full_name.localeCompare(b.full_name)),
+    [appMembers, manualMembers]
+  )
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -285,12 +314,15 @@ export function MembersPage() {
         if (m.source === 'manual') return false
         if ((m as AppMember).role !== roleFilter) return false
       }
-      if (groupFilter !== 'all' && m.cell_group !== groupFilter) return false
+      if (groupFilter !== 'all') {
+        const grp = memberCellGroup(m)
+        if (grp !== groupFilter) return false
+      }
       if (q) return (
         m.full_name.toLowerCase().includes(q) ||
         m.phone?.includes(q) ||
         m.membership_number?.toLowerCase().includes(q) ||
-        m.cell_group?.toLowerCase().includes(q)
+        memberCellGroup(m)?.toLowerCase().includes(q)
       )
       return true
     })
@@ -300,10 +332,15 @@ export function MembersPage() {
     total: allMembers.length,
     active: allMembers.filter(m => m.is_active).length,
     dormant: allMembers.filter(m => !m.is_active).length,
-    app: appMembers.length,
-    manual: manualMembers.length,
     leadership: appMembers.filter(m => ['leader', 'clergy', 'admin'].includes(m.role)).length,
-  }), [allMembers, appMembers, manualMembers])
+  }), [allMembers, appMembers])
+
+  // Cell group names for filter dropdown (from app members + real groups)
+  const groupNames = useMemo(() => {
+    const fromApp = appMembers.map(m => m.cell_group).filter(Boolean) as string[]
+    const fromGroups = cellGroups.map(g => g.name)
+    return Array.from(new Set([...fromGroups, ...fromApp])).sort()
+  }, [appMembers, cellGroups])
 
   if (loading) {
     return (
@@ -324,7 +361,7 @@ export function MembersPage() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-navy">Members</h1>
-            <p className="text-xs text-gray-500">{stats.app} on app · {stats.manual} manual</p>
+            <p className="text-xs text-gray-500">{appMembers.length} on app · {manualMembers.length} manual</p>
           </div>
         </div>
         {canManage && (
@@ -373,7 +410,7 @@ export function MembersPage() {
         ))}
       </div>
 
-      {/* Search + filter toggle */}
+      {/* Search + filters */}
       <div className="space-y-2">
         <div className="flex gap-2">
           <div className="relative flex-1">
@@ -413,7 +450,7 @@ export function MembersPage() {
             <select value={groupFilter} onChange={e => setGroupFilter(e.target.value)}
               className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy/20">
               <option value="all">All Cell Groups</option>
-              {cellGroups.map(g => <option key={g} value={g}>{g}</option>)}
+              {groupNames.map(g => <option key={g} value={g}>{g}</option>)}
             </select>
             {(roleFilter !== 'all' || groupFilter !== 'all' || sourceFilter !== 'all') && (
               <button onClick={() => { setRoleFilter('all'); setGroupFilter('all'); setSourceFilter('all') }}
@@ -436,70 +473,68 @@ export function MembersPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          {filtered.map(member => (
-            <div key={`${member.source}-${member.id}`}
-              className={`bg-white rounded-xl border px-4 py-3 flex items-center gap-3 transition-all ${member.is_active ? 'border-gray-100' : 'border-orange-100 bg-orange-50/20'}`}>
+          {filtered.map(member => {
+            const grp = memberCellGroup(member)
+            return (
+              <div key={`${member.source}-${member.id}`}
+                className={`bg-white rounded-xl border px-4 py-3 flex items-center gap-3 transition-all ${member.is_active ? 'border-gray-100' : 'border-orange-100 bg-orange-50/20'}`}>
 
-              {/* Avatar */}
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold ${member.is_active ? 'bg-navy/10 text-navy' : 'bg-gray-100 text-gray-400'}`}>
-                {member.source === 'app' && (member as AppMember).avatar_url
-                  ? <img src={(member as AppMember).avatar_url!} alt={member.full_name} className="w-full h-full rounded-full object-cover" />
-                  : initials(member.full_name)
-                }
-              </div>
-
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <p className="font-semibold text-navy text-sm">{member.full_name}</p>
-                  {member.membership_number && <span className="text-xs text-gray-400">#{member.membership_number}</span>}
-                  {/* Source badge */}
-                  <span className={`flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-full font-medium ${member.source === 'app' ? 'bg-sky-50 text-sky-600' : 'bg-amber-50 text-amber-700'}`}>
-                    {member.source === 'app' ? <Smartphone className="w-2.5 h-2.5" /> : <UserRound className="w-2.5 h-2.5" />}
-                    {member.source === 'app' ? 'App' : 'Manual'}
-                  </span>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold ${member.is_active ? 'bg-navy/10 text-navy' : 'bg-gray-100 text-gray-400'}`}>
+                  {member.source === 'app' && (member as AppMember).avatar_url
+                    ? <img src={(member as AppMember).avatar_url!} alt={member.full_name} className="w-full h-full rounded-full object-cover" />
+                    : initials(member.full_name)
+                  }
                 </div>
-                <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-                  {member.phone && (
-                    <span className="flex items-center gap-1 text-xs text-gray-500">
-                      <Phone className="w-3 h-3" />{member.phone}
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-semibold text-navy text-sm">{member.full_name}</p>
+                    {member.membership_number && <span className="text-xs text-gray-400">#{member.membership_number}</span>}
+                    <span className={`flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-full font-medium ${member.source === 'app' ? 'bg-sky-50 text-sky-600' : 'bg-amber-50 text-amber-700'}`}>
+                      {member.source === 'app' ? <Smartphone className="w-2.5 h-2.5" /> : <UserRound className="w-2.5 h-2.5" />}
+                      {member.source === 'app' ? 'App' : 'Manual'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+                    {member.phone && (
+                      <span className="flex items-center gap-1 text-xs text-gray-500">
+                        <Phone className="w-3 h-3" />{member.phone}
+                      </span>
+                    )}
+                    {grp && <span className="text-xs text-gray-400">{grp}</span>}
+                    {member.date_joined && (
+                      <span className="text-xs text-gray-400">
+                        Joined {new Date(member.date_joined).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                  {member.source === 'app' && (
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ROLE_COLORS[(member as AppMember).role] || 'bg-gray-100 text-gray-700'}`}>
+                      {ROLE_LABELS[(member as AppMember).role] || (member as AppMember).role}
                     </span>
                   )}
-                  {member.cell_group && <span className="text-xs text-gray-400">{member.cell_group}</span>}
-                  {member.date_joined && (
-                    <span className="text-xs text-gray-400">
-                      Joined {new Date(member.date_joined).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}
+                  {canManage ? (
+                    <button onClick={() => toggleActive(member)} disabled={togglingId === member.id}
+                      className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium transition-colors disabled:opacity-50 ${
+                        member.is_active ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+                      }`}>
+                      {member.is_active ? <><UserCheck className="w-3 h-3" /> Active</> : <><UserX className="w-3 h-3" /> Dormant</>}
+                    </button>
+                  ) : (
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${member.is_active ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                      {member.is_active ? 'Active' : 'Dormant'}
                     </span>
                   )}
                 </div>
               </div>
-
-              {/* Right: role + status */}
-              <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                {member.source === 'app' && (
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ROLE_COLORS[(member as AppMember).role] || 'bg-gray-100 text-gray-700'}`}>
-                    {ROLE_LABELS[(member as AppMember).role] || (member as AppMember).role}
-                  </span>
-                )}
-                {canManage ? (
-                  <button onClick={() => toggleActive(member)} disabled={togglingId === member.id}
-                    className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium transition-colors disabled:opacity-50 ${
-                      member.is_active ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
-                    }`}>
-                    {member.is_active ? <><UserCheck className="w-3 h-3" /> Active</> : <><UserX className="w-3 h-3" /> Dormant</>}
-                  </button>
-                ) : (
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${member.is_active ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
-                    {member.is_active ? 'Active' : 'Dormant'}
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
-      {/* Add Member Modal */}
       {showAddForm && (
         <AddMemberModal
           cellGroups={cellGroups}
