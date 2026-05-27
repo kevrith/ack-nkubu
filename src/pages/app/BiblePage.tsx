@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { BookOpen, Search as SearchIcon, Bookmark, Calendar, GitCompare, Download } from 'lucide-react'
 import { VersionSelector } from '@/components/bible/VersionSelector'
 import { BookNavigator } from '@/components/bible/BookNavigator'
@@ -9,10 +9,23 @@ import { ReadingPlans } from '@/components/bible/ReadingPlans'
 import { BibleComparison } from '@/components/bible/BibleComparison'
 import { OfflineBibleDownloader } from '@/components/bible/OfflineBibleDownloader'
 import { useBibleStore } from '@/store/bibleStore'
+import { useAuth } from '@/hooks/useAuth'
+import { BibleVersion } from '@/types/bible'
 
 export function BiblePage() {
   const [view, setView] = useState<'read' | 'search' | 'bookmarks' | 'plans' | 'compare' | 'offline'>('read')
-  const { currentChapter } = useBibleStore()
+  const { currentChapter, setVersion } = useBibleStore()
+  const { user } = useAuth()
+
+  // Seed version from profile preference the first time this user opens the Bible
+  // (only if they haven't manually chosen a version yet — localStorage key absent)
+  useEffect(() => {
+    if (!user?.profile?.preferred_bible_version) return
+    const stored = localStorage.getItem('ack-bible-prefs')
+    if (!stored) {
+      setVersion(user.profile.preferred_bible_version as BibleVersion)
+    }
+  }, [user?.id])
 
   return (
     <div className="space-y-4">

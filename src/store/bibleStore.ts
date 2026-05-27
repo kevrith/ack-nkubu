@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import { BibleVersion } from '@/types/bible'
 
 interface BibleState {
@@ -12,13 +13,21 @@ interface BibleState {
   setFontSize: (size: 'sm' | 'md' | 'lg' | 'xl') => void
 }
 
-export const useBibleStore = create<BibleState>((set) => ({
-  version: 'KJV',
-  currentBook: null,
-  currentChapter: null,
-  fontSize: 'md',
-  setVersion: (version) => set({ version }),
-  setCurrentBook: (bookId) => set({ currentBook: bookId }),
-  setCurrentChapter: (chapterId) => set({ currentChapter: chapterId }),
-  setFontSize: (fontSize) => set({ fontSize }),
-}))
+export const useBibleStore = create<BibleState>()(
+  persist(
+    (set) => ({
+      version: 'KJV',
+      currentBook: null,
+      currentChapter: null,
+      fontSize: 'md',
+      setVersion: (version) => set({ version }),
+      setCurrentBook: (bookId) => set({ currentBook: bookId }),
+      setCurrentChapter: (chapterId) => set({ currentChapter: chapterId }),
+      setFontSize: (fontSize) => set({ fontSize }),
+    }),
+    {
+      name: 'ack-bible-prefs',
+      partialize: (state) => ({ version: state.version, fontSize: state.fontSize }),
+    }
+  )
+)
