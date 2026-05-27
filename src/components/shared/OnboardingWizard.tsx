@@ -81,7 +81,6 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
 
     // 2. Place into cell_group_members
     if (selectedGroupId) {
-      // Avoid duplicate if they re-run onboarding
       const { data: existing } = await supabase
         .from('cell_group_members')
         .select('id')
@@ -89,7 +88,11 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
         .eq('member_id', user.id)
         .maybeSingle()
 
-      if (!existing) {
+      if (existing) {
+        await supabase.from('cell_group_members')
+          .update({ is_active: true })
+          .eq('id', existing.id)
+      } else {
         await supabase.from('cell_group_members').insert({
           cell_group_id: selectedGroupId,
           member_id: user.id,
@@ -100,17 +103,25 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
 
     // 3. Place into ministry_members for each selected ministry
     if (selectedMinistryIds.length > 0) {
-      // Fetch existing to avoid duplicates
       const { data: existingMemberships } = await supabase
         .from('ministry_members')
-        .select('ministry_id')
+        .select('id, ministry_id, is_active')
         .eq('member_id', user.id)
         .in('ministry_id', selectedMinistryIds)
 
-      const alreadyIn = new Set(existingMemberships?.map(m => m.ministry_id) || [])
-      const toInsert = selectedMinistryIds
-        .filter(id => !alreadyIn.has(id))
-        .map(id => ({ ministry_id: id, member_id: user.id, role: 'member', is_active: true }))
+      const existingMap = new Map(existingMemberships?.map(m => [m.ministry_id, m]) || [])
+
+      const toInsert: { ministry_id: string; member_id: string; role: string; is_active: boolean }[] = []
+      for (const id of selectedMinistryIds) {
+        const existing = existingMap.get(id)
+        if (existing) {
+          if (!existing.is_active) {
+            await supabase.from('ministry_members').update({ is_active: true }).eq('id', existing.id)
+          }
+        } else {
+          toInsert.push({ ministry_id: id, member_id: user.id, role: 'member', is_active: true })
+        }
+      }
 
       if (toInsert.length > 0) {
         await supabase.from('ministry_members').insert(toInsert)
