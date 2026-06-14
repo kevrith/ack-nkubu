@@ -30,3 +30,4 @@ dist-ssr
 # Firebase service worker with keys
 public/firebase-messaging-sw.js
 hymn-imports/
+supabase/.temp/
