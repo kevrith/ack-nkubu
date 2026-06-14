@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Star, Book, ChevronRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -157,10 +157,20 @@ export function TodaysCollect() {
   const [collect, setCollect] = useState<BCPSection | null>(null)
   const [loading, setLoading] = useState(true)
   const [showFull, setShowFull] = useState(false)
+  const [isClipped, setIsClipped] = useState(false)
+  const contentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     loadCollect()
   }, [])
+
+  // Detect whether the collapsed content actually overflows its clamped height
+  useEffect(() => {
+    if (loading || showFull) return
+    const el = contentRef.current
+    if (!el) return
+    setIsClipped(el.scrollHeight > el.clientHeight + 1)
+  }, [loading, collect, showFull])
 
   async function loadCollect() {
     const today = new Date()
@@ -202,11 +212,6 @@ export function TodaysCollect() {
     )
   }
 
-  // Find the main collect text (first 'text' or 'all' part)
-  const mainPart = collect.content.find(p => p.role === 'text' || p.role === 'all')
-  const previewText = mainPart?.text ?? ''
-  const previewLines = previewText.split('\n').slice(0, 3).join('\n')
-
   return (
     <div className="space-y-4">
       {/* Hero card */}
@@ -231,7 +236,7 @@ export function TodaysCollect() {
 
       {/* Collect text card */}
       <div className="bg-white rounded-xl shadow-sm p-5">
-        <div className={`transition-all overflow-hidden ${showFull ? '' : 'max-h-40'}`}>
+        <div ref={contentRef} className={`transition-all overflow-hidden ${showFull ? '' : 'max-h-40'}`}>
           {collect.content.map((part, idx) => {
             if (part.role === 'rubric' && !showFull) return null
             return (
@@ -249,7 +254,7 @@ export function TodaysCollect() {
           })}
         </div>
 
-        {!showFull && previewText.split('\n').length > 3 && (
+        {!showFull && isClipped && (
           <div className="mt-2 pt-3 border-t border-gray-100">
             <button
               onClick={() => setShowFull(true)}
