@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Music, Plus, Edit2, Trash2, Save, X, Eye, EyeOff, ChevronDown, ChevronUp } from 'lucide-react'
+import { Music, Plus, Edit2, Trash2, Save, X, Eye, EyeOff, ChevronDown, ChevronUp, Upload } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -14,7 +14,92 @@ interface Hymn {
   created_at: string
 }
 
+interface ParsedHymn {
+  number: number
+  title: string
+  category: string
+  chorus: string | null
+  full_text: string
+}
+
 const EMPTY_FORM = { number: '', title: '', chorus: '', full_text: '', category: 'ack_hymnal' }
+
+const IMPORT_EXAMPLE = `number: 21
+title: Joy to the World
+category: ack_hymnal
+chorus:
+lyrics:
+1. Joy to the world! the Lord is come;
+Let earth receive her King.
+
+2. Joy to the earth! the Saviour reigns;
+Let men their songs employ.
+---
+number: 22
+title: O Come O Come Emmanuel
+category: ack_hymnal
+lyrics:
+1. O come, O come, Emmanuel,
+And ransom captive Israel.`
+
+/**
+ * Parses the bulk-import block format into hymn records.
+ * Blocks are separated by a line containing only "---".
+ * Within a block, "key: value" lines set fields; "lyrics:" and
+ * "chorus:" begin multi-line bodies that run until the next key
+ * (or the end of the block).
+ */
+function parseBulkImport(text: string, fallbackCategory: string): { hymns: ParsedHymn[]; errors: string[] } {
+  const errors: string[] = []
+  const hymns: ParsedHymn[] = []
+  const blocks = text.split(/^\s*---\s*$/m).map(b => b.trim()).filter(Boolean)
+
+  blocks.forEach((block, i) => {
+    const lines = block.split('\n')
+    let number: number | null = null
+    let title = ''
+    let category = fallbackCategory
+    const chorusLines: string[] = []
+    const lyricLines: string[] = []
+    let mode: 'fields' | 'chorus' | 'lyrics' = 'fields'
+
+    for (const raw of lines) {
+      const line = raw
+      const keyMatch = line.match(/^(number|title|category|chorus|lyrics)\s*:\s*(.*)$/i)
+      if (keyMatch) {
+        const key = keyMatch[1].toLowerCase()
+        const val = keyMatch[2]
+        if (key === 'number') { number = parseInt(val.trim()) || null; mode = 'fields' }
+        else if (key === 'title') { title = val.trim(); mode = 'fields' }
+        else if (key === 'category') {
+          const c = val.trim().toLowerCase()
+          if (c) category = c === 'golden_bells' || c === 'golden bells' ? 'golden_bells' : 'ack_hymnal'
+          mode = 'fields'
+        }
+        else if (key === 'chorus') { mode = 'chorus'; if (val.trim()) chorusLines.push(val) }
+        else if (key === 'lyrics') { mode = 'lyrics'; if (val.trim()) lyricLines.push(val) }
+        continue
+      }
+      if (mode === 'chorus') chorusLines.push(line)
+      else if (mode === 'lyrics') lyricLines.push(line)
+    }
+
+    const fullText = lyricLines.join('\n').trim()
+    if (number === null) { errors.push(`Block ${i + 1}: missing "number:"`); return }
+    if (!title) { errors.push(`Block ${i + 1} (no. ${number}): missing "title:"`); return }
+    if (!fullText) { errors.push(`Block ${i + 1} (no. ${number}): missing "lyrics:"`); return }
+
+    hymns.push({
+      number,
+      title,
+      category,
+      chorus: chorusLines.join('\n').trim() || null,
+      full_text: fullText,
+    })
+  })
+
+  return { hymns, errors }
+}
 
 export function AdminHymnsPage() {
   const { user } = useAuth()
@@ -28,6 +113,10 @@ export function AdminHymnsPage() {
   const [error, setError] = useState<string | null>(null)
   const [expanded, setExpanded] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [showImport, setShowImport] = useState(false)
+  const [importText, setImportText] = useState('')
+  const [importing, setImporting] = useState(false)
+  const [importResult, setImportResult] = useState<string | null>(null)
 
   useEffect(() => { fetchHymns() }, [])
 
@@ -87,6 +176,59 @@ export function AdminHymnsPage() {
     setDeleteConfirm(null)
   }
 
+  const parsedPreview = importText.trim()
+    ? parseBulkImport(importText, 'ack_hymnal')
+    : { hymns: [], errors: [] }
+
+  async function handleBulkImport() {
+    const { hymns: parsed, errors } = parseBulkImport(importText, 'ack_hymnal')
+    if (parsed.length === 0) {
+      setImportResult(errors.length ? errors.join('\n') : 'Nothing to import.')
+      return
+    }
+    setImporting(true)
+    setImportResult(null)
+
+    // Match existing rows by number + category to decide update vs insert
+    const existingByKey = new Map(hymns.map(h => [`${h.number}|${h.category}`, h]))
+    let updated = 0
+    let inserted = 0
+    const failures: string[] = []
+
+    for (const p of parsed) {
+      const existing = existingByKey.get(`${p.number}|${p.category}`)
+      const payload = {
+        number: p.number,
+        title: p.title,
+        category: p.category,
+        chorus: p.chorus,
+        full_text: p.full_text,
+        created_by: user?.id,
+      }
+      const { error: err } = existing
+        ? await supabase.from('hymns').update(payload).eq('id', existing.id)
+        : await supabase.from('hymns').insert(payload)
+      if (err) failures.push(`No. ${p.number} (${p.category}): ${err.message}`)
+      else if (existing) updated++
+      else inserted++
+    }
+
+    await fetchHymns()
+    setImporting(false)
+    const summary = `Imported ${parsed.length} hymn(s): ${updated} updated, ${inserted} added.`
+    setImportResult(failures.length ? `${summary}\n\nErrors:\n${failures.join('\n')}` : summary)
+    if (failures.length === 0) setImportText('')
+  }
+
+  function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => setImportText(String(reader.result || ''))
+    reader.readAsText(file)
+    e.target.value = ''
+  }
+
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-12">
       <div className="flex items-center justify-between">
@@ -97,11 +239,77 @@ export function AdminHymnsPage() {
             <p className="text-sm text-gray-500">{hymns.length} total · ACK Hymnal + Golden Bells</p>
           </div>
         </div>
-        <button onClick={openNew}
-          className="flex items-center gap-2 px-4 py-2 bg-navy text-white rounded-xl text-sm font-medium hover:bg-navy/90 transition-colors">
-          <Plus className="w-4 h-4" /> Add Hymn
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => { setShowImport(v => !v); setImportResult(null) }}
+            className="flex items-center gap-2 px-4 py-2 border border-navy/20 text-navy rounded-xl text-sm font-medium hover:bg-navy/5 transition-colors">
+            <Upload className="w-4 h-4" /> Bulk Import
+          </button>
+          <button onClick={openNew}
+            className="flex items-center gap-2 px-4 py-2 bg-navy text-white rounded-xl text-sm font-medium hover:bg-navy/90 transition-colors">
+            <Plus className="w-4 h-4" /> Add Hymn
+          </button>
+        </div>
       </div>
+
+      {/* Bulk import panel */}
+      {showImport && (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-navy">Bulk Import Hymns</h2>
+            <button onClick={() => setShowImport(false)} className="text-gray-400 hover:text-gray-600">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs text-blue-800 space-y-1">
+            <p className="font-semibold">Format — one block per hymn, separated by a line with only <code className="bg-white px-1 rounded">---</code></p>
+            <p>Each block uses <code className="bg-white px-1 rounded">number:</code>, <code className="bg-white px-1 rounded">title:</code>, <code className="bg-white px-1 rounded">category:</code> (ack_hymnal or golden_bells), optional <code className="bg-white px-1 rounded">chorus:</code>, then <code className="bg-white px-1 rounded">lyrics:</code> followed by the verses.</p>
+            <p>Hymns matching an existing number + category are <span className="font-semibold">updated</span>; new ones are added.</p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 cursor-pointer transition-colors">
+              <Upload className="w-4 h-4" /> Upload .txt / .csv
+              <input type="file" accept=".txt,.csv,text/plain" onChange={handleImportFile} className="hidden" />
+            </label>
+            <button onClick={() => setImportText(IMPORT_EXAMPLE)}
+              className="text-sm text-navy hover:underline">Insert example</button>
+          </div>
+
+          <textarea value={importText}
+            onChange={e => { setImportText(e.target.value); setImportResult(null) }}
+            rows={14} placeholder={IMPORT_EXAMPLE}
+            className="w-full px-3 py-2 border rounded-lg text-sm font-mono focus:ring-2 focus:ring-navy/20 focus:outline-none resize-y" />
+
+          {importText.trim() && (
+            <div className="text-xs text-gray-500">
+              {parsedPreview.hymns.length} hymn(s) ready to import
+              {parsedPreview.errors.length > 0 && (
+                <span className="text-red-600"> · {parsedPreview.errors.length} block(s) with problems</span>
+              )}
+              {parsedPreview.errors.length > 0 && (
+                <pre className="mt-1 text-red-600 whitespace-pre-wrap font-sans">{parsedPreview.errors.join('\n')}</pre>
+              )}
+            </div>
+          )}
+
+          {importResult && (
+            <pre className="text-sm whitespace-pre-wrap font-sans bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-gray-700">{importResult}</pre>
+          )}
+
+          <div className="flex gap-3 pt-1">
+            <button onClick={handleBulkImport} disabled={importing || parsedPreview.hymns.length === 0}
+              className="flex items-center gap-2 px-5 py-2.5 bg-navy text-white rounded-xl text-sm font-medium hover:bg-navy/90 disabled:opacity-50 transition-colors">
+              <Upload className="w-4 h-4" />
+              {importing ? 'Importing…' : `Import ${parsedPreview.hymns.length || ''} Hymn(s)`}
+            </button>
+            <button onClick={() => { setImportText(''); setImportResult(null) }}
+              className="px-5 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Category filter */}
       <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
