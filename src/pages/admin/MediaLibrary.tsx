@@ -96,7 +96,7 @@ export function MediaLibrary() {
         </div>
 
         <MediaUploader
-          accept="*"
+          accept="image/*,video/*,audio/*"
           resourceType="image"
           onUploadComplete={() => loadMedia()}
           label="Upload New File"
