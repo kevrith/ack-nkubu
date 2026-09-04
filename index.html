@@ -2,19 +2,162 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/MERU.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Anglican Church of Kenya Parish - Digital home for our community" />
+
+    <!-- ── Primary ─────────────────────────────────────────── -->
+    <title>ACK Nkubu | ACK St Francis Nkubu — Anglican Church of Kenya</title>
+    <meta name="description" content="ACK St Francis Nkubu — the Anglican Church of Kenya parish in Nkubu, Meru County. Sunday service times, sermons, events, notices, giving and parish news." />
+    <meta name="keywords" content="ACK Nkubu, ACK St Francis Nkubu, Anglican Church Nkubu, Anglican Church of Kenya Nkubu, church in Nkubu, Nkubu parish, ACK Meru Diocese, church Meru County, Nkubu Sunday service times, St Francis Nkubu" />
+    <meta name="author" content="ACK St Francis Nkubu" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <link rel="canonical" href="https://acknkubu.org/" />
+
+    <!-- ── Location ────────────────────────────────────────── -->
+    <meta name="geo.region" content="KE-28" />
+    <meta name="geo.placename" content="Nkubu, Meru County, Kenya" />
+    <meta name="geo.position" content="-0.066;37.655" />
+    <meta name="ICBM" content="-0.066, 37.655" />
+
+    <!-- ── Open Graph ──────────────────────────────────────── -->
+    <meta property="og:site_name" content="ACK St Francis Nkubu" />
+    <meta property="og:title" content="ACK St Francis Nkubu — Anglican Church of Kenya, Nkubu" />
+    <meta property="og:description" content="The Anglican Church of Kenya parish in Nkubu, Meru County. Join us for worship — service times, sermons, events and parish life." />
+    <meta property="og:image" content="https://acknkubu.org/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:alt" content="Members of ACK St Francis Nkubu outside the church" />
+    <meta property="og:url" content="https://acknkubu.org/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_KE" />
+
+    <!-- ── Twitter ─────────────────────────────────────────── -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ACK St Francis Nkubu — Anglican Church of Kenya, Nkubu" />
+    <meta name="twitter:description" content="The Anglican Church of Kenya parish in Nkubu, Meru County. Service times, sermons, events and parish life." />
+    <meta name="twitter:image" content="https://acknkubu.org/og-image.jpg" />
+
+    <!-- ── Icons / PWA ─────────────────────────────────────── -->
+    <link rel="icon" type="image/png" href="/MERU.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
     <meta name="theme-color" content="#1a3a5c" />
+    <meta name="apple-mobile-web-app-title" content="ACK Nkubu" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="apple-touch-icon" href="/MERU.png" />
+
+    <!-- ── Fonts ───────────────────────────────────────────── -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&family=Lora:wght@400;500;600&display=swap" rel="stylesheet">
-    <title>ACK St Francis Nkubu</title>
+
+    <!-- ── Structured data: the parish ─────────────────────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Church",
+      "@id": "https://acknkubu.org/#church",
+      "name": "ACK St Francis Nkubu",
+      "alternateName": ["ACK Nkubu", "St Francis Nkubu", "Anglican Church of Kenya — St Francis Nkubu"],
+      "url": "https://acknkubu.org/",
+      "logo": "https://acknkubu.org/icon-512.png",
+      "image": "https://acknkubu.org/og-image.jpg",
+      "description": "ACK St Francis Nkubu is an Anglican Church of Kenya parish in Nkubu, Meru County, serving the community with worship, fellowship, pastoral care and outreach.",
+      "denomination": "Anglican",
+      "parentOrganization": {
+        "@type": "Organization",
+        "name": "Anglican Church of Kenya — Diocese of Meru",
+        "url": "https://www.ackmeru.org"
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Nkubu",
+        "addressRegion": "Meru County",
+        "addressCountry": "KE"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": -0.066,
+        "longitude": 37.655
+      },
+      "areaServed": {
+        "@type": "AdministrativeArea",
+        "name": "Nkubu, Meru County, Kenya"
+      },
+      "sameAs": ["https://www.youtube.com/@ackstfrancis2776"],
+      "event": [
+        {
+          "@type": "Event",
+          "name": "Sunday English Service",
+          "eventSchedule": {
+            "@type": "Schedule",
+            "byDay": "https://schema.org/Sunday",
+            "startTime": "08:30",
+            "endTime": "09:45",
+            "repeatFrequency": "P1W",
+            "scheduleTimezone": "Africa/Nairobi"
+          },
+          "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+          "location": { "@id": "https://acknkubu.org/#church" },
+          "organizer": { "@id": "https://acknkubu.org/#church" }
+        },
+        {
+          "@type": "Event",
+          "name": "Sunday Kiswahili Service",
+          "eventSchedule": {
+            "@type": "Schedule",
+            "byDay": "https://schema.org/Sunday",
+            "startTime": "10:00",
+            "endTime": "12:00",
+            "repeatFrequency": "P1W",
+            "scheduleTimezone": "Africa/Nairobi"
+          },
+          "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+          "location": { "@id": "https://acknkubu.org/#church" },
+          "organizer": { "@id": "https://acknkubu.org/#church" }
+        }
+      ]
+    }
+    </script>
+
+    <!-- ── Structured data: the site ───────────────────────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "@id": "https://acknkubu.org/#website",
+      "url": "https://acknkubu.org/",
+      "name": "ACK St Francis Nkubu",
+      "alternateName": "ACK Nkubu",
+      "inLanguage": "en-KE",
+      "publisher": { "@id": "https://acknkubu.org/#church" }
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- Crawlable fallback for clients that do not run JavaScript. -->
+    <noscript>
+      <h1>ACK St Francis Nkubu — Anglican Church of Kenya</h1>
+      <p>
+        ACK St Francis Nkubu is an Anglican Church of Kenya parish in Nkubu,
+        Meru County, part of the ACK Diocese of Meru. We are a community of
+        faith, hope and love — join us in worship, fellowship and service.
+      </p>
+      <h2>Sunday Service Times</h2>
+      <ul>
+        <li>8:30 AM – 9:45 AM — English service, Main Church</li>
+        <li>10:00 AM – 12:00 PM — Kiswahili service, Main Church</li>
+      </ul>
+      <h2>Parish Life</h2>
+      <p>
+        Sermons, notices, events, Bible and Anglican prayer resources, cell
+        groups, ministries, sacrament requests, pastoral care and M-Pesa giving
+        are all available to members through the parish app.
+      </p>
+      <p>Nkubu, Meru County, Kenya · <a href="https://acknkubu.org/">acknkubu.org</a></p>
+      <p>This site needs JavaScript enabled to use the parish app.</p>
+    </noscript>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -1,7 +1,9 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useAuthStore } from '@/store/authStore'
 import { BookOpen, Users, Heart, Calendar, Bell, Video, HandHeart, Shield, Phone, Mail, MapPin, MessageCircleHeart, Bookmark } from 'lucide-react'
+import { SEO, SITE_URL } from '@/components/seo/SEO'
 
 const HERO_IMAGES = ['/aa.jpeg', '/aa2.jpeg', '/aa3.jpeg', '/aa4.jpeg']
 
@@ -14,6 +16,19 @@ interface ServiceTime {
 }
 
 export function LandingPage() {
+  const { user, loading: authLoading } = useAuthStore()
+  const navigate = useNavigate()
+
+  // An OAuth callback can land here rather than on /home (Supabase falls back to
+  // the project's Site URL whenever the requested redirect isn't allowlisted).
+  // Without this, an already-signed-in visitor sits on the public page and has
+  // to press "Sign In" a second time to get into the app.
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate('/home', { replace: true })
+    }
+  }, [user, authLoading, navigate])
+
   const [currentImage, setCurrentImage] = useState(0)
   const [notices, setNotices] = useState<any[]>([])
   const [sermons, setSermons] = useState<any[]>([])
@@ -96,8 +111,56 @@ export function LandingPage() {
       .limit(4)
     setThemes(data || [])
   }
+  // Mirrors the static JSON-LD in index.html, but with whatever the parish has
+  // set in the CMS (name, contacts, service times) so search results stay current.
+  const churchStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'Church',
+    '@id': `${SITE_URL}/#church`,
+    name: settings.church_name,
+    alternateName: ['ACK Nkubu', 'St Francis Nkubu'],
+    url: `${SITE_URL}/`,
+    logo: `${SITE_URL}/icon-512.png`,
+    image: `${SITE_URL}/og-image.jpg`,
+    description: `${settings.church_name} is an Anglican Church of Kenya parish in Nkubu, Meru County, serving the community with worship, fellowship, pastoral care and outreach.`,
+    denomination: 'Anglican',
+    email: settings.church_email,
+    telephone: settings.church_phone,
+    parentOrganization: {
+      '@type': 'Organization',
+      name: 'Anglican Church of Kenya — Diocese of Meru',
+      url: 'https://www.ackmeru.org',
+    },
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: settings.church_address,
+      addressLocality: 'Nkubu',
+      addressRegion: 'Meru County',
+      addressCountry: 'KE',
+    },
+    areaServed: {
+      '@type': 'AdministrativeArea',
+      name: 'Nkubu, Meru County, Kenya',
+    },
+    sameAs: [YOUTUBE_CHANNEL_URL],
+    event: serviceTimes.map(slot => ({
+      '@type': 'Event',
+      name: `Sunday ${slot.language} Service`,
+      description: `${slot.language} service at ${slot.venue}, ${slot.time}.`,
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      location: { '@id': `${SITE_URL}/#church` },
+      organizer: { '@id': `${SITE_URL}/#church` },
+    })),
+  }
+
   return (
     <div className="min-h-screen">
+      <SEO
+        title={`ACK Nkubu | ${settings.church_name} — Anglican Church of Kenya`}
+        description={`${settings.church_name} — the Anglican Church of Kenya parish in Nkubu, Meru County. Sunday service times, sermons, events, notices, giving and parish news.`}
+        canonicalPath="/"
+        structuredData={churchStructuredData}
+      />
       {/* Hero Section with Slideshow */}
       <div className="relative min-h-screen">
         {HERO_IMAGES.map((img, i) => (
@@ -128,7 +191,7 @@ export function LandingPage() {
 
         <nav className="relative z-20 container mx-auto px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
-            <img src="/MERU.png" alt="Logo" className="w-10 h-10 sm:w-12 sm:h-12 rounded-full" />
+            <img src="/MERU.png" alt={`${settings.church_name} logo`} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full" />
             <span className="text-base sm:text-xl md:text-2xl font-playfair text-white font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] truncate max-w-[150px] sm:max-w-none">{settings.church_name}</span>
           </div>
           <div className="flex gap-2 sm:gap-4">

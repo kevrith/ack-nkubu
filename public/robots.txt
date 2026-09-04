@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+# Members-only and administrative areas — no crawl value
+Disallow: /admin
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /profile
+Disallow: /notifications
+Disallow: /members
+Disallow: /directory
+Disallow: /giving
+Disallow: /pledges
+Disallow: /pastoral-care
+Disallow: /sacraments
+Disallow: /referral
+
+Sitemap: https://acknkubu.org/sitemap.xml

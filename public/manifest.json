@@ -1,7 +1,10 @@
 {
-  "name": "ACK St Francis Nkubu",
+  "id": "/",
+  "name": "ACK St Francis Nkubu — Anglican Church of Kenya",
   "short_name": "ACK Nkubu",
-  "description": "ACK St Francis Nkubu Parish Web Application",
+  "description": "The Anglican Church of Kenya parish in Nkubu, Meru County. Service times, sermons, events, notices, Bible and prayers, giving and parish life.",
+  "lang": "en",
+  "dir": "ltr",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -22,5 +25,5 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["lifestyle", "social"]
+  "categories": ["lifestyle", "social", "education"]
 }
