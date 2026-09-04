@@ -1,20 +1,19 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/store/authStore'
 import { AuthUser } from '@/types/auth'
+
+// Track if auth has been initialized globally to prevent duplicate calls
+let initialized = false
 
 export function useAuth() {
   const { user, loading, setUser, setLoading } = useAuthStore()
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        fetchProfile(session.user.id)
-      } else {
-        setLoading(false)
-      }
-    })
+    if (initialized) return
+    initialized = true
 
+    // Listen for auth state changes only — this fires immediately with current session
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         fetchProfile(session.user.id)
@@ -24,7 +23,10 @@ export function useAuth() {
       }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+      initialized = false
+    }
   }, [])
 
   async function fetchProfile(userId: string) {

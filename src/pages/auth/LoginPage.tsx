@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
+import { useAuthStore } from '@/store/authStore'
 import { Cross, Eye, EyeOff, ArrowLeft } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -20,7 +21,7 @@ export function LoginPage() {
     }
   }, [user, authLoading])
 
-  // Show spinner while checking auth state
+  // Show spinner while checking initial auth state
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-navy-900 via-navy-700 to-navy-600">
@@ -29,7 +30,6 @@ export function LoginPage() {
     )
   }
 
-  // Don't render form if user is already logged in (prevents flash)
   if (user) return null
 
   async function handleSubmit(e: React.FormEvent) {
@@ -40,8 +40,19 @@ export function LoginPage() {
     if (error) {
       setError(error.message)
       setLoading(false)
+      return
     }
-    // navigation handled by useEffect once profile is fetched
+    // Poll the store until user is set (profile fetched), then navigate
+    const wait = () => new Promise<void>(resolve => {
+      const unsub = useAuthStore.subscribe((state) => {
+        if (!state.loading && state.user) {
+          unsub()
+          resolve()
+        }
+      })
+    })
+    await wait()
+    navigate('/home', { replace: true })
   }
 
   return (
