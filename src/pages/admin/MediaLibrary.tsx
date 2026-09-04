@@ -2,16 +2,19 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Image, Video, Music, File, Trash2, ExternalLink, Search } from 'lucide-react';
 import { MediaUploader } from '@/components/shared/MediaUploader';
+import { useAuth } from '@/hooks/useAuth';
 
 interface MediaFile {
   id: string;
   url: string;
   public_id: string;
   type: 'image' | 'video' | 'audio' | 'raw';
+  file_name: string;
   created_at: string;
 }
 
 export function MediaLibrary() {
+  const { user } = useAuth();
   const [media, setMedia] = useState<MediaFile[]>([]);
   const [filter, setFilter] = useState<'all' | 'image' | 'video' | 'audio'>('all');
   const [search, setSearch] = useState('');
@@ -22,37 +25,41 @@ export function MediaLibrary() {
   }, []);
 
   const loadMedia = async () => {
-    const { data: sermons } = await supabase
-      .from('sermons')
-      .select('media_url, cloudinary_public_id, type, created_at')
-      .not('media_url', 'is', null);
-
-    const files: MediaFile[] = (sermons || []).map(s => ({
-      id: s.cloudinary_public_id,
-      url: s.media_url,
-      public_id: s.cloudinary_public_id,
-      type: s.type as any,
-      created_at: s.created_at,
-    }));
-
-    setMedia(files);
+    setLoading(true);
+    const { data } = await supabase
+      .from('media_files')
+      .select('*')
+      .order('created_at', { ascending: false });
+    setMedia(data || []);
     setLoading(false);
   };
 
-  const handleDelete = async (publicId: string) => {
+  const handleUploadComplete = async (url: string, publicId?: string) => {
+    // Detect type from URL
+    const ext = url.split('.').pop()?.toLowerCase() || ''
+    const type = ['mp4', 'mov', 'avi', 'webm'].includes(ext) ? 'video'
+      : ['mp3', 'wav', 'ogg', 'm4a'].includes(ext) ? 'audio'
+      : 'image'
+
+    await supabase.from('media_files').insert({
+      url,
+      public_id: publicId || url,
+      type,
+      file_name: publicId?.split('/').pop() || '',
+      uploaded_by: user?.id,
+    });
+    loadMedia();
+  };
+
+  const handleDelete = async (id: string) => {
     if (!confirm('Delete this file? This cannot be undone.')) return;
-    
-    await supabase
-      .from('sermons')
-      .update({ media_url: null, cloudinary_public_id: null })
-      .eq('cloudinary_public_id', publicId);
-    
-    setMedia(media.filter(m => m.public_id !== publicId));
+    await supabase.from('media_files').delete().eq('id', id);
+    setMedia(media.filter(m => m.id !== id));
   };
 
   const filteredMedia = media.filter(m => {
     if (filter !== 'all' && m.type !== filter) return false;
-    if (search && !m.public_id.toLowerCase().includes(search.toLowerCase())) return false;
+    if (search && !m.file_name?.toLowerCase().includes(search.toLowerCase()) && !m.public_id.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
 
@@ -98,7 +105,7 @@ export function MediaLibrary() {
         <MediaUploader
           accept="image/*,video/*,audio/*"
           resourceType="image"
-          onUploadComplete={() => loadMedia()}
+          onUploadComplete={handleUploadComplete}
           label="Upload New File"
         />
       </div>
@@ -113,7 +120,8 @@ export function MediaLibrary() {
                 getIcon(file.type)
               )}
             </div>
-            <p className="text-sm text-gray-600 truncate mb-2">{file.public_id}</p>
+            <p className="text-sm text-gray-600 truncate mb-1">{file.file_name || file.public_id}</p>
+            <p className="text-xs text-gray-400 mb-2">{new Date(file.created_at).toLocaleDateString()}</p>
             <div className="flex gap-2">
               <a
                 href={file.url}
@@ -125,7 +133,7 @@ export function MediaLibrary() {
                 View
               </a>
               <button
-                onClick={() => handleDelete(file.public_id)}
+                onClick={() => handleDelete(file.id)}
                 className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
               >
                 <Trash2 className="h-3 w-3" />
