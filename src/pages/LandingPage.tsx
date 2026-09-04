@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { BookOpen, Users, Heart, Calendar, Bell, Video, HandHeart, Shield, Phone, Mail, MapPin, MessageCircleHeart, Bookmark } from 'lucide-react'
 
+const HERO_IMAGES = ['/aa.jpeg', '/aa2.jpeg', '/aa3.jpeg', '/aa4.jpeg']
+
 const YOUTUBE_CHANNEL_URL = 'https://www.youtube.com/@ackstfrancis2776'
 
 interface ServiceTime {
@@ -12,6 +14,7 @@ interface ServiceTime {
 }
 
 export function LandingPage() {
+  const [currentImage, setCurrentImage] = useState(0)
   const [notices, setNotices] = useState<any[]>([])
   const [sermons, setSermons] = useState<any[]>([])
   const [testimonies, setTestimonies] = useState<any[]>([])
@@ -33,6 +36,13 @@ export function LandingPage() {
     loadTestimonies()
     loadThemes()
     loadSettings()
+  }, [])
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentImage(prev => (prev + 1) % HERO_IMAGES.length)
+    }, 5000)
+    return () => clearInterval(timer)
   }, [])
 
   async function loadSettings() {
@@ -88,16 +98,33 @@ export function LandingPage() {
   }
   return (
     <div className="min-h-screen">
-      {/* Hero Section with Church Image */}
+      {/* Hero Section with Slideshow */}
       <div className="relative min-h-screen">
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage: 'url(/aa.jpg)',
-            backgroundPosition: 'center',
-            backgroundSize: 'cover'
-          }}
-        ></div>
+        {HERO_IMAGES.map((img, i) => (
+          <div
+            key={img}
+            className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
+            style={{
+              backgroundImage: `url(${img})`,
+              backgroundPosition: 'center',
+              backgroundSize: 'cover',
+              opacity: i === currentImage ? 1 : 0,
+            }}
+          />
+        ))}
+
+        {/* Slideshow dots */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+          {HERO_IMAGES.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentImage(i)}
+              className={`w-2.5 h-2.5 rounded-full transition-all ${
+                i === currentImage ? 'bg-white scale-125' : 'bg-white/50'
+              }`}
+            />
+          ))}
+        </div>
 
         <nav className="relative z-20 container mx-auto px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
