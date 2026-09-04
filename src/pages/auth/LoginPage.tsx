@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { Cross, Eye, EyeOff, ArrowLeft } from 'lucide-react'
@@ -10,22 +10,26 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const { signIn } = useAuth()
+  const { signIn, user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
+
+  // Navigate once auth confirms user is set
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate('/home', { replace: true })
+    }
+  }, [user, authLoading])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
     setLoading(true)
-
     const { error } = await signIn(email, password)
-    
     if (error) {
       setError(error.message)
       setLoading(false)
-    } else {
-      navigate('/home')
     }
+    // navigation handled by useEffect above once profile is fetched
   }
 
   return (
