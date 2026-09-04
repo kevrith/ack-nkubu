@@ -1,76 +1,96 @@
-import { useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/store/authStore'
 import { AuthUser } from '@/types/auth'
 
-// Track if auth has been initialized globally to prevent duplicate calls
-let initialized = false
+// The auth listener is a process-wide singleton, started when this module is
+// first imported. It is deliberately never unsubscribed: previously each
+// useAuth() caller raced for ownership of the subscription and tore it down on
+// unmount, so every route change unsubscribed and resubscribed — refetching the
+// profile each time, and leaving windows with no listener at all.
+let started = false
+// Guards against refetching the profile for a user we already resolved, since
+// TOKEN_REFRESHED / repeated SIGNED_IN events fire on tab focus and on refresh.
+let resolvedUserId: string | null = null
 
-export function useAuth() {
-  const { user, loading, setUser, setLoading } = useAuthStore()
+async function fetchProfile(userId: string) {
+  const { setUser, setLoading } = useAuthStore.getState()
+  const cacheKey = `cached_profile_${userId}`
 
-  useEffect(() => {
-    if (initialized) return
-    initialized = true
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single()
 
-    // Listen for auth state changes only — this fires immediately with current session
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        fetchProfile(session.user.id)
-      } else {
+  if (error || !data) {
+    // Offline fallback: restore from localStorage cache
+    const cached = localStorage.getItem(cacheKey)
+    if (cached) {
+      try {
+        const { data: { user: authUser } } = await supabase.auth.getUser()
+        const cachedProfile = JSON.parse(cached)
+        setUser({
+          id: userId,
+          email: authUser?.email || cachedProfile._email || '',
+          profile: cachedProfile,
+        })
+        resolvedUserId = userId
+      } catch {
         setUser(null)
-        setLoading(false)
-      }
-    })
-
-    return () => {
-      subscription.unsubscribe()
-      initialized = false
-    }
-  }, [])
-
-  async function fetchProfile(userId: string) {
-    const cacheKey = `cached_profile_${userId}`
-
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
-
-    if (error || !data) {
-      // Offline fallback: restore from localStorage cache
-      const cached = localStorage.getItem(cacheKey)
-      if (cached) {
-        try {
-          const { data: { user: authUser } } = await supabase.auth.getUser()
-          const cachedProfile = JSON.parse(cached)
-          setUser({
-            id: userId,
-            email: authUser?.email || cachedProfile._email || '',
-            profile: cachedProfile,
-          })
-        } catch {
-          setUser(null)
-        }
-      } else {
-        setUser(null)
+        resolvedUserId = null
       }
     } else {
-      const { data: { user: authUser } } = await supabase.auth.getUser()
-      if (authUser) {
-        const authUserObj: AuthUser = {
-          id: authUser.id,
-          email: authUser.email!,
-          profile: data,
-        }
-        setUser(authUserObj)
-        // Cache profile for offline use
-        localStorage.setItem(cacheKey, JSON.stringify({ ...data, _email: authUser.email }))
-      }
+      setUser(null)
+      resolvedUserId = null
     }
-    setLoading(false)
+  } else {
+    const { data: { user: authUser } } = await supabase.auth.getUser()
+    if (authUser) {
+      const authUserObj: AuthUser = {
+        id: authUser.id,
+        email: authUser.email!,
+        profile: data,
+      }
+      setUser(authUserObj)
+      resolvedUserId = userId
+      // Cache profile for offline use
+      localStorage.setItem(cacheKey, JSON.stringify({ ...data, _email: authUser.email }))
+    } else {
+      setUser(null)
+      resolvedUserId = null
+    }
   }
+  setLoading(false)
+}
+
+function startAuthListener() {
+  if (started) return
+  started = true
+
+  supabase.auth.onAuthStateChange((_event, session) => {
+    const userId = session?.user?.id
+    if (userId) {
+      // Already resolved this user — a token refresh must not blank the UI or
+      // trigger another profiles round-trip.
+      if (resolvedUserId === userId && useAuthStore.getState().user) {
+        useAuthStore.getState().setLoading(false)
+        return
+      }
+      fetchProfile(userId)
+    } else {
+      resolvedUserId = null
+      useAuthStore.getState().setUser(null)
+      useAuthStore.getState().setLoading(false)
+    }
+  })
+}
+
+// Start immediately on import so auth resolves even on routes that render no
+// auth-aware component (the landing page, where an OAuth redirect can land).
+startAuthListener()
+
+export function useAuth() {
+  const { user, loading } = useAuthStore()
 
   async function signIn(email: string, password: string) {
     const { error } = await supabase.auth.signInWithPassword({ email, password })

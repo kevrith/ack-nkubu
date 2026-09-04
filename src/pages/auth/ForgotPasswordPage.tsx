@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Cross, ArrowLeft, Mail } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { SEO } from '@/components/seo/SEO'
 
 export function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -29,6 +30,7 @@ export function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-navy-900 via-navy-700 to-navy-600 px-4">
+      <SEO title="Reset Password" description="Reset your ACK St Francis Nkubu parish app password." canonicalPath="/forgot-password" noIndex />
       <div className="w-full max-w-md">
         <div className="bg-white rounded-lg shadow-2xl p-8">
           <div className="flex flex-col items-center mb-8">

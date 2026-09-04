@@ -2,8 +2,28 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { useAuthStore } from '@/store/authStore'
+import { SEO } from '@/components/seo/SEO'
 import { Cross, Eye, EyeOff, ArrowLeft } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+
+// Resolves once the auth listener has the profile in the store. Reads the
+// current state first: zustand's subscribe only fires on change, so a profile
+// that resolved while signIn() was still awaiting would never wake a
+// subscribe-only wait.
+function waitForProfile(timeoutMs = 8000): Promise<boolean> {
+  return new Promise(resolve => {
+    if (useAuthStore.getState().user) return resolve(true)
+    let unsub: () => void = () => {}
+    const timer = setTimeout(() => { unsub(); resolve(false) }, timeoutMs)
+    unsub = useAuthStore.subscribe(state => {
+      if (state.user) {
+        clearTimeout(timer)
+        unsub()
+        resolve(true)
+      }
+    })
+  })
+}
 
 export function LoginPage() {
   const [email, setEmail] = useState('')
@@ -42,21 +62,21 @@ export function LoginPage() {
       setLoading(false)
       return
     }
-    // Poll the store until user is set (profile fetched), then navigate
-    const wait = () => new Promise<void>(resolve => {
-      const unsub = useAuthStore.subscribe((state) => {
-        if (!state.loading && state.user) {
-          unsub()
-          resolve()
-        }
-      })
-    })
-    await wait()
-    navigate('/home', { replace: true })
+    // The credentials are accepted; the auth listener still has to load the
+    // profile before the app can render. Bounded wait, so a failed profiles
+    // lookup reports an error instead of leaving the button on "Signing in..."
+    // forever.
+    if (await waitForProfile()) {
+      navigate('/home', { replace: true })
+    } else {
+      setError('Signed in, but your profile could not be loaded. Please check your connection and try again.')
+      setLoading(false)
+    }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-navy-900 via-navy-700 to-navy-600 px-4">
+      <SEO title="Sign In" description="Sign in to the ACK St Francis Nkubu parish app." canonicalPath="/login" noIndex />
       <Link to="/" className="absolute top-4 left-4 flex items-center gap-2 text-white hover:text-gold transition-colors">
         <ArrowLeft className="w-5 h-5" />
         <span>Back to Home</span>

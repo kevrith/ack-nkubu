@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
+import { SEO } from '@/components/seo/SEO'
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -16,5 +17,12 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" replace />
   }
 
-  return <>{children}</>
+  // Members-only pages carry no public search value and often show personal
+  // data, so keep them out of the index.
+  return (
+    <>
+      <SEO noIndex />
+      {children}
+    </>
+  )
 }
