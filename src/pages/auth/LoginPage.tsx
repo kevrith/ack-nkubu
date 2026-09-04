@@ -13,12 +13,24 @@ export function LoginPage() {
   const { signIn, user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
 
-  // Navigate once auth confirms user is set
+  // Redirect already-authenticated users
   useEffect(() => {
     if (!authLoading && user) {
       navigate('/home', { replace: true })
     }
   }, [user, authLoading])
+
+  // Show spinner while checking auth state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-navy-900 via-navy-700 to-navy-600">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white" />
+      </div>
+    )
+  }
+
+  // Don't render form if user is already logged in (prevents flash)
+  if (user) return null
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -29,7 +41,7 @@ export function LoginPage() {
       setError(error.message)
       setLoading(false)
     }
-    // navigation handled by useEffect above once profile is fetched
+    // navigation handled by useEffect once profile is fetched
   }
 
   return (
