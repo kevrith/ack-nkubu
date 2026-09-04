@@ -21,6 +21,7 @@ const EventsPage = lazy(() => import('@/pages/app/EventsPage').then(m => ({ defa
 const EventDetailPage = lazy(() => import('@/pages/app/EventDetailPage').then(m => ({ default: m.EventDetailPage })))
 const CommunityPage = lazy(() => import('@/pages/app/CommunityPage').then(m => ({ default: m.CommunityPage })))
 const GivingPage = lazy(() => import('@/pages/app/GivingPage').then(m => ({ default: m.GivingPage })))
+const GivingCallbackPage = lazy(() => import('@/pages/app/GivingCallbackPage').then(m => ({ default: m.GivingCallbackPage })))
 const PastoralCarePage = lazy(() => import('@/pages/app/PastoralCarePage').then(m => ({ default: m.PastoralCarePage })))
 const ProfilePage = lazy(() => import('@/pages/app/ProfilePage').then(m => ({ default: m.ProfilePage })))
 const MemberDirectory = lazy(() => import('@/pages/app/MemberDirectory').then(m => ({ default: m.MemberDirectory })))
@@ -128,6 +129,12 @@ export function AppRouter() {
           <Route path="/giving" element={
             <ProtectedRoute>
               <AppLayout><GivingPage /></AppLayout>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/giving/callback" element={
+            <ProtectedRoute>
+              <AppLayout><GivingCallbackPage /></AppLayout>
             </ProtectedRoute>
           } />
 
