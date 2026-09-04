@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Plus, FileText, Calendar, Bell, Mic, BookOpen } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
@@ -6,11 +7,19 @@ import { MediaUploader } from '@/components/shared/MediaUploader'
 
 type ContentType = 'sermon' | 'notice' | 'event' | 'article' | 'prayer'
 
+const CONTENT_TYPES: ContentType[] = ['sermon', 'notice', 'event', 'article', 'prayer']
+
 export function AdminContentPage() {
   const { user } = useAuth()
-  const [contentType, setContentType] = useState<ContentType>('notice')
+  // Deep links like /admin/content?type=event open straight on that form.
+  const [searchParams] = useSearchParams()
+  const requestedType = searchParams.get('type') as ContentType | null
+  const [contentType, setContentType] = useState<ContentType>(
+    requestedType && CONTENT_TYPES.includes(requestedType) ? requestedType : 'notice',
+  )
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const userRole = user?.profile.role
   const canEditSermons = userRole === 'clergy' || userRole === 'admin'
@@ -31,6 +40,7 @@ export function AdminContentPage() {
   const [eventLocation, setEventLocation] = useState('')
   const [eventDate, setEventDate] = useState('')
   const [eventTime, setEventTime] = useState('')
+  const [eventEndTime, setEventEndTime] = useState('')
 
   // Sermon form
   const [sermonTitle, setSermonTitle] = useState('')
@@ -76,25 +86,41 @@ export function AdminContentPage() {
   async function handleSubmitEvent(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
+    setSubmitError(null)
 
-    const datetime = `${eventDate}T${eventTime}:00`
+    const startDatetime = `${eventDate}T${eventTime}:00`
+    // An end time gives the event a real duration on the calendar; without one
+    // every event rendered as a single instant.
+    const endDatetime = eventEndTime ? `${eventDate}T${eventEndTime}:00` : null
+
+    if (endDatetime && new Date(endDatetime) <= new Date(startDatetime)) {
+      setSubmitError('The end time must be after the start time.')
+      setLoading(false)
+      return
+    }
 
     const { error } = await supabase.from('events').insert({
       title: eventTitle,
       description: eventDescription,
       category: eventCategory,
       location: eventLocation,
-      start_datetime: datetime,
+      start_datetime: startDatetime,
+      end_datetime: endDatetime,
       is_published: true,
       rsvp_enabled: true,
       created_by: user?.id,
     })
 
-    if (!error) {
+    if (error) {
+      setSubmitError(`Could not publish the event: ${error.message}`)
+    } else {
       setSuccess(true)
       setEventTitle('')
       setEventDescription('')
       setEventLocation('')
+      setEventDate('')
+      setEventTime('')
+      setEventEndTime('')
       setTimeout(() => setSuccess(false), 3000)
     }
     setLoading(false)
@@ -177,6 +203,13 @@ export function AdminContentPage() {
       {success && (
         <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
           ✓ Content published successfully!
+        </div>
+      )}
+
+      {submitError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded flex items-start gap-3">
+          <span className="flex-1">{submitError}</span>
+          <button onClick={() => setSubmitError(null)} className="underline text-sm">Dismiss</button>
         </div>
       )}
 
@@ -346,7 +379,7 @@ export function AdminContentPage() {
                 />
               </div>
             </div>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Date</label>
                 <input
@@ -358,12 +391,23 @@ export function AdminContentPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Time</label>
+                <label className="block text-sm font-medium mb-2">Start time</label>
                 <input
                   type="time"
                   value={eventTime}
                   onChange={(e) => setEventTime(e.target.value)}
                   required
+                  className="w-full px-4 py-2 border rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  End time <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <input
+                  type="time"
+                  value={eventEndTime}
+                  onChange={(e) => setEventEndTime(e.target.value)}
                   className="w-full px-4 py-2 border rounded-lg"
                 />
               </div>

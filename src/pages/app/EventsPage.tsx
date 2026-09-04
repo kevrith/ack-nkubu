@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Calendar, MapPin, Users, Clock, List } from 'lucide-react'
+import { Calendar, MapPin, Users, Clock, List, Plus } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { Link } from 'react-router-dom'
 import { Event } from '@/types/notice'
 import { formatDate } from '@/lib/utils'
 import { EventCalendar } from '@/components/events/EventCalendar'
@@ -22,6 +23,11 @@ export function EventsPage() {
   const [userRSVPs, setUserRSVPs] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('calendar')
+
+  // Event creation lives on the admin content page; surface a shortcut here so
+  // staff don't have to know that.
+  const role = user?.profile.role
+  const canCreateEvents = role === 'leader' || role === 'clergy' || role === 'admin'
 
   useEffect(() => {
     fetchEvents()
@@ -66,8 +72,18 @@ export function EventsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-playfair text-navy">Events Calendar</h1>
+        <div className="flex flex-wrap items-center gap-2">
+        {canCreateEvents && (
+          <Link
+            to="/admin/content?type=event"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-navy text-white text-sm font-medium hover:bg-navy-600 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add event
+          </Link>
+        )}
         <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
           <button
             onClick={() => setViewMode('calendar')}
@@ -87,6 +103,7 @@ export function EventsPage() {
             <List className="w-4 h-4" />
             List
           </button>
+        </div>
         </div>
       </div>
 

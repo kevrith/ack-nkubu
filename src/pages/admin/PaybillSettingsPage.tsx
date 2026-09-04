@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Save, Smartphone } from 'lucide-react'
+import { Save, Smartphone, CreditCard, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export function PaybillSettingsPage() {
+  const [paystackOn, setPaystackOn] = useState(false)
+  const [paystackSaving, setPaystackSaving] = useState(false)
+  const [paystackError, setPaystackError] = useState<string | null>(null)
   const [paybill, setPaybill] = useState({
     paybill_number: '',
     account_number: '',
@@ -14,6 +17,7 @@ export function PaybillSettingsPage() {
 
   useEffect(() => {
     fetchPaybill()
+    loadPaystackFlag()
   }, [])
 
   async function fetchPaybill() {
@@ -61,6 +65,32 @@ export function PaybillSettingsPage() {
     setTimeout(() => setSuccess(false), 3000)
   }
 
+  async function loadPaystackFlag() {
+    const { data } = await supabase
+      .from('cms_settings')
+      .select('value')
+      .eq('key', 'paystack_enabled')
+      .maybeSingle()
+    setPaystackOn(data?.value === true || data?.value === 'true')
+  }
+
+  async function togglePaystack() {
+    const next = !paystackOn
+    setPaystackSaving(true)
+    setPaystackError(null)
+
+    const { error } = await supabase
+      .from('cms_settings')
+      .upsert({ key: 'paystack_enabled', value: next }, { onConflict: 'key' })
+
+    if (error) {
+      setPaystackError(error.message)
+    } else {
+      setPaystackOn(next)
+    }
+    setPaystackSaving(false)
+  }
+
   if (loading) return <div>Loading...</div>
 
   return (
@@ -68,6 +98,39 @@ export function PaybillSettingsPage() {
       <div>
         <h1 className="text-3xl font-playfair text-navy">M-Pesa Paybill Settings</h1>
         <p className="text-gray-600 mt-2">Configure paybill details for the giving shortcut</p>
+      </div>
+
+      <div className="max-w-2xl bg-white rounded-lg shadow p-6 space-y-4">
+        <div className="flex items-start gap-3">
+          <CreditCard className="w-6 h-6 text-navy flex-shrink-0 mt-1" />
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold text-navy">In-app giving (Paystack)</h2>
+            <p className="text-sm text-gray-600 mt-1">
+              Lets members give by M-Pesa or card without leaving the app. Turn this on only once
+              Paystack has KES M-Pesa live on the parish account and{' '}
+              <code className="text-xs bg-gray-100 px-1 rounded">PAYSTACK_SECRET_KEY</code> is set on
+              the Supabase functions. While it is off, the paybill above is the only giving route.
+            </p>
+          </div>
+        </div>
+
+        {paystackError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
+            {paystackError}
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={togglePaystack}
+          disabled={paystackSaving}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 ${
+            paystackOn ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+          }`}
+        >
+          {paystackSaving && <Loader2 className="w-4 h-4 animate-spin" />}
+          {paystackOn ? 'Paystack giving is ON — click to turn off' : 'Paystack giving is OFF — click to turn on'}
+        </button>
       </div>
 
       <form onSubmit={handleSave} className="max-w-2xl bg-white rounded-lg shadow p-6 space-y-6">

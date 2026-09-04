@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/authStore';
 import { PastoralCareRequest } from '@/types/pastoral';
-import { Clock, CheckCircle, AlertCircle, User } from 'lucide-react';
+import { Clock, CheckCircle, AlertCircle, User, Lock, Phone } from 'lucide-react';
 
 export function ClergyPastoralDashboard() {
   const { user } = useAuthStore();
   const [requests, setRequests] = useState<PastoralCareRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'in_progress'>('pending');
+  const [filter, setFilter] = useState<'all' | 'pending' | 'acknowledged' | 'in_progress' | 'completed'>('pending');
 
   useEffect(() => {
     loadRequests();
@@ -95,12 +95,12 @@ export function ClergyPastoralDashboard() {
         <h1 className="text-3xl font-playfair text-navy">Pastoral Care Dashboard</h1>
       </div>
 
-      <div className="flex gap-2">
-        {['all', 'pending', 'in_progress'].map((f) => (
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {['all', 'pending', 'acknowledged', 'in_progress', 'completed'].map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f as any)}
-            className={`px-4 py-2 rounded-lg capitalize ${
+            className={`px-4 py-2 rounded-lg capitalize whitespace-nowrap ${
               filter === f
                 ? 'bg-navy text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -129,15 +129,35 @@ export function ClergyPastoralDashboard() {
                     <span className="px-3 py-1 bg-navy/10 text-navy rounded-full text-xs font-medium">
                       {request.type.replace('_', ' ')}
                     </span>
+                    {request.is_confidential && (
+                      <span
+                        title="Handle privately — do not discuss outside the clergy team"
+                        className="flex items-center gap-1 px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium"
+                      >
+                        <Lock className="h-3 w-3" />
+                        Confidential
+                      </span>
+                    )}
                   </div>
                   
-                  {!request.is_confidential && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                      <User className="h-4 w-4" />
-                      <span>{request.requester?.full_name}</span>
-                      {request.contact_phone && <span>• {request.contact_phone}</span>}
-                    </div>
-                  )}
+                  {/* Clergy always see the requester. "Confidential" marks how the
+                      request must be handled — it is not a reason to hide the name
+                      from the pastor who has to act on it. */}
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-700 mb-2">
+                    <span className="flex items-center gap-2 font-medium">
+                      <User className="h-4 w-4 text-navy" />
+                      {request.requester?.full_name || 'Unknown member'}
+                    </span>
+                    {(request.contact_phone || request.requester?.phone) && (
+                      <a
+                        href={`tel:${request.contact_phone || request.requester?.phone}`}
+                        className="flex items-center gap-1 text-navy hover:underline"
+                      >
+                        <Phone className="h-3.5 w-3.5" />
+                        {request.contact_phone || request.requester?.phone}
+                      </a>
+                    )}
+                  </div>
 
                   <p className="text-gray-700 mb-3">{request.details}</p>
 
@@ -160,24 +180,24 @@ export function ClergyPastoralDashboard() {
               </div>
 
               <div className="border-t pt-4 space-y-3">
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {request.status === 'pending' && (
-                    <>
-                      <button
-                        onClick={() => updateStatus(request.id, 'acknowledged')}
-                        className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
-                      >
-                        Acknowledge
-                      </button>
-                      <button
-                        onClick={() => updateStatus(request.id, 'in_progress')}
-                        className="px-3 py-1 bg-purple-600 text-white rounded text-sm hover:bg-purple-700"
-                      >
-                        Start Working
-                      </button>
-                    </>
+                    <button
+                      onClick={() => updateStatus(request.id, 'acknowledged')}
+                      className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                    >
+                      Acknowledge
+                    </button>
                   )}
-                  {request.status === 'in_progress' && (
+                  {(request.status === 'pending' || request.status === 'acknowledged') && (
+                    <button
+                      onClick={() => updateStatus(request.id, 'in_progress')}
+                      className="px-3 py-1 bg-purple-600 text-white rounded text-sm hover:bg-purple-700"
+                    >
+                      Start Working
+                    </button>
+                  )}
+                  {request.status !== 'completed' && (
                     <button
                       onClick={() => updateStatus(request.id, 'completed')}
                       className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 flex items-center gap-1"
@@ -185,6 +205,13 @@ export function ClergyPastoralDashboard() {
                       <CheckCircle className="h-4 w-4" />
                       Mark Complete
                     </button>
+                  )}
+                  {request.status === 'completed' && (
+                    <span className="text-sm text-green-700 flex items-center gap-1">
+                      <CheckCircle className="h-4 w-4" />
+                      Completed
+                      {request.completed_at && ` · ${new Date(request.completed_at).toLocaleDateString()}`}
+                    </span>
                   )}
                 </div>
 
