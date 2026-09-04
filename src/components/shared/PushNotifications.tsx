@@ -3,6 +3,7 @@ import { Bell, X, CheckCircle, AlertCircle } from 'lucide-react';
 import { requestNotificationPermission, onMessageListener } from '@/lib/firebase';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/authStore';
+import { alertForNotification } from '@/lib/notificationSound';
 
 export function PushNotifications() {
   const { user } = useAuthStore();
@@ -26,6 +27,7 @@ export function PushNotifications() {
   useEffect(() => {
     const unsubscribe = onMessageListener((payload: any) => {
       setForegroundNotif(payload);
+      alertForNotification();
       setTimeout(() => setForegroundNotif(null), 6000);
     });
     return () => unsubscribe();

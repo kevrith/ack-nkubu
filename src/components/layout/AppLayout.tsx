@@ -1,12 +1,18 @@
+import { useEffect } from 'react'
 import { Header } from './Header'
 import { MobileNav } from './MobileNav'
 import { DesktopSidebar } from './DesktopSidebar'
 import { useAuth } from '@/hooks/useAuth'
 import { PushNotifications } from '@/components/shared/PushNotifications'
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
+import { primeNotificationSound } from '@/lib/notificationSound'
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const { user } = useAuth()
+
+  // Browsers keep audio suspended until the user interacts; arm it early so the
+  // first notification of the session is actually audible.
+  useEffect(() => { primeNotificationSound() }, [])
 
   return (
     <div className="min-h-screen bg-cream">

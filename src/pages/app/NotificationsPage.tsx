@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Bell, Check, Trash2 } from 'lucide-react'
+import { Bell, Check, Trash2, Volume2, VolumeX } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import {
+  isNotificationSoundEnabled,
+  setNotificationSoundEnabled,
+  playNotificationSound,
+} from '@/lib/notificationSound'
 
 interface Notification {
   id: string
@@ -15,6 +20,14 @@ export function NotificationsPage() {
   const { user } = useAuth()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
+  const [soundOn, setSoundOn] = useState(isNotificationSoundEnabled)
+
+  function toggleSound() {
+    const next = !soundOn
+    setSoundOn(next)
+    setNotificationSoundEnabled(next)
+    if (next) playNotificationSound() // preview so the choice is audible
+  }
 
   useEffect(() => {
     loadNotifications()
@@ -79,7 +92,18 @@ export function NotificationsPage() {
     <div className="max-w-3xl mx-auto p-4">
       <div className="flex items-center gap-3 mb-6">
         <Bell className="w-8 h-8 text-navy" />
-        <h1 className="text-3xl font-playfair font-bold text-navy">Notifications</h1>
+        <h1 className="text-3xl font-playfair font-bold text-navy flex-1">Notifications</h1>
+        <button
+          onClick={toggleSound}
+          title={soundOn ? 'Notification sound on — tap to mute' : 'Notification sound muted — tap to unmute'}
+          aria-label={soundOn ? 'Mute notification sound' : 'Unmute notification sound'}
+          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+            soundOn ? 'bg-navy text-white hover:bg-navy-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}
+        >
+          {soundOn ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          <span className="hidden sm:inline">{soundOn ? 'Sound on' : 'Muted'}</span>
+        </button>
       </div>
 
       {notifications.length === 0 ? (

@@ -1,12 +1,15 @@
 import { Bell, User } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { Link } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { alertForNotification } from '@/lib/notificationSound'
 
 export function Header() {
   const { user } = useAuth()
   const [unreadCount, setUnreadCount] = useState(0)
+  // null until the first fetch lands, so we don't chime for a pre-existing backlog
+  const lastCount = useRef<number | null>(null)
 
   useEffect(() => {
     if (!user) return
@@ -17,7 +20,12 @@ export function Header() {
         .select('id', { count: 'exact', head: true })
         .eq('user_id', user.id)
         .eq('read', false)
-      setUnreadCount(count ?? 0)
+      const next = count ?? 0
+      if (lastCount.current !== null && next > lastCount.current) {
+        alertForNotification()
+      }
+      lastCount.current = next
+      setUnreadCount(next)
     }
 
     fetchCount()
@@ -32,14 +40,17 @@ export function Header() {
       )
       .subscribe()
 
-    return () => { supabase.removeChannel(channel) }
+    return () => {
+      lastCount.current = null
+      supabase.removeChannel(channel)
+    }
   }, [user])
 
   return (
     <header className="sticky top-0 z-50 bg-navy text-white shadow-lg">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link to={user ? "/home" : "/"} className="flex items-center gap-2">
-          <img src="/MERU.png" alt="Logo" className="w-10 h-10 rounded-full" />
+          <img src="/MERU.png" alt="ACK St Francis Nkubu logo" className="w-10 h-10 rounded-full" />
           <span className="font-playfair text-xl font-bold hidden sm:inline">ACK St Francis Nkubu</span>
         </Link>
 
