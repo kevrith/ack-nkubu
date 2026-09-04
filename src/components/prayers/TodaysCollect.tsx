@@ -64,7 +64,7 @@ function getTodaySlug(today: Date): string {
     const sundayStart = addDays(advent1, (w - 1) * 7)
     const sundayEnd = addDays(sundayStart, 6)
     if (today >= sundayStart && today <= sundayEnd) {
-      const labels = ['advent-sunday', 'collect-advent2', 'collect-advent3', 'collect-advent4']
+      const labels = ['collect-advent-sunday', 'collect-advent2', 'collect-advent3', 'collect-advent4']
       return labels[w - 1]
     }
   }
@@ -176,13 +176,16 @@ export function TodaysCollect() {
     const today = new Date()
     const slug = getTodaySlug(today)
 
+    // Ask for the day's collect and a safe fallback in one round trip, so a
+    // slug that isn't seeded yet still shows something rather than an error.
+    const fallback = 'collect-trinity-sunday'
     const { data } = await supabase
       .from('bcp_sections')
       .select('*')
-      .eq('slug', slug)
-      .single()
+      .in('slug', slug === fallback ? [slug] : [slug, fallback])
 
-    setCollect(data)
+    const rows = (data ?? []) as BCPSection[]
+    setCollect(rows.find((r) => r.slug === slug) ?? rows[0] ?? null)
     setLoading(false)
   }
 
