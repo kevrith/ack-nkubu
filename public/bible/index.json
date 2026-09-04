@@ -1,0 +1,29 @@
+[
+  {
+    "id": "KJV",
+    "name": "King James Version",
+    "language": "English",
+    "copyright": "Public domain",
+    "source": "https://ebible.org/eng-kjv2006/",
+    "builtAt": "2026-09-04",
+    "books": 66
+  },
+  {
+    "id": "WEB",
+    "name": "World English Bible",
+    "language": "English",
+    "copyright": "Public domain",
+    "source": "https://ebible.org/engwebp/",
+    "builtAt": "2026-09-04",
+    "books": 66
+  },
+  {
+    "id": "ONEN",
+    "name": "Neno: Bibilia Takatifu",
+    "language": "Kiswahili",
+    "copyright": "Biblica® Toleo Wazi Neno: Bibilia Takatifu™ © 1984, 1989, 2009, 2015 Biblica, Inc. Used under the Biblica Open licence.",
+    "source": "https://ebible.org/swhonen/",
+    "builtAt": "2026-09-04",
+    "books": 66
+  }
+]

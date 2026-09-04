@@ -1,19 +1,18 @@
 import { useState, useEffect } from 'react'
 import { GitCompare, ChevronDown, Loader2, BookOpen } from 'lucide-react'
-import { bibleService, AVAILABLE_VERSIONS } from '@/services/bible.service'
+import { bibleService, AVAILABLE_VERSIONS, VERSION_INFO } from '@/services/bible.service'
 import { useBibleStore } from '@/store/bibleStore'
 import { BibleVersion, BibleChapter } from '@/types/bible'
 
-const VERSION_NAMES: Record<BibleVersion, string> = {
-  NIV:  'New International Version',
-  NLT:  'New Living Translation',
-  KJV:  'King James Version',
-}
+const VERSION_NAMES: Record<BibleVersion, string> = Object.fromEntries(
+  Object.entries(VERSION_INFO).map(([id, info]) => [id, info.description]),
+) as Record<BibleVersion, string>
 
 export function BibleComparison() {
   const { currentChapter } = useBibleStore()
-  const [versionA, setVersionA] = useState<BibleVersion>('NIV')
-  const [versionB, setVersionB] = useState<BibleVersion>('KJV')
+  // Default to two bundled versions so comparison works without an API key.
+  const [versionA, setVersionA] = useState<BibleVersion>('KJV')
+  const [versionB, setVersionB] = useState<BibleVersion>('ONEN')
   const [chapterA, setChapterA] = useState<BibleChapter | null>(null)
   const [chapterB, setChapterB] = useState<BibleChapter | null>(null)
   const [loadingA, setLoadingA] = useState(false)

@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useAuthStore } from '@/store/authStore'
 import { normalizeKenyanPhone } from '@/lib/utils'
 import { BibleVersion } from '@/types/bible'
-import { AVAILABLE_VERSIONS } from '@/services/bible.service'
+import { AVAILABLE_VERSIONS, VERSION_INFO } from '@/services/bible.service'
 import { MediaUploader } from '@/components/shared/MediaUploader'
 import { Link } from 'react-router-dom'
 
@@ -14,11 +14,9 @@ interface CellGroup {
   name: string
 }
 
-const versionInfo: Record<BibleVersion, string> = {
-  NIV: 'New International Version',
-  NLT: 'New Living Translation',
-  KJV: 'King James Version',
-}
+const versionInfo: Record<BibleVersion, string> = Object.fromEntries(
+  Object.entries(VERSION_INFO).map(([id, info]) => [id, info.description]),
+) as Record<BibleVersion, string>
 
 export function ProfilePage() {
   const { user, signOut } = useAuth()
@@ -28,7 +26,10 @@ export function ProfilePage() {
   const [phone, setPhone] = useState(user?.profile.phone || '')
   const [preferredBibleVersion, setPreferredBibleVersion] = useState<BibleVersion>(() => {
     const saved = user?.profile.preferred_bible_version
-    return AVAILABLE_VERSIONS.includes(saved as BibleVersion) ? (saved as BibleVersion) : 'NIV'
+    // NIV needs an api.bible key, so fall back to the first version actually offered.
+    return AVAILABLE_VERSIONS.includes(saved as BibleVersion)
+      ? (saved as BibleVersion)
+      : AVAILABLE_VERSIONS[0]
   })
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)

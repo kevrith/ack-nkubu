@@ -1,12 +1,6 @@
 import { useBibleStore } from '@/store/bibleStore'
 import { BibleVersion } from '@/types/bible'
-import { AVAILABLE_VERSIONS } from '@/services/bible.service'
-
-const versionInfo: Record<BibleVersion, { label: string; description: string }> = {
-  NIV: { label: 'NIV', description: 'New International Version' },
-  NLT: { label: 'NLT', description: 'New Living Translation' },
-  KJV: { label: 'KJV', description: 'King James Version' },
-}
+import { AVAILABLE_VERSIONS, VERSION_INFO } from '@/services/bible.service'
 
 export function VersionSelector() {
   const { version, setVersion } = useBibleStore()
@@ -19,7 +13,8 @@ export function VersionSelector() {
     >
       {AVAILABLE_VERSIONS.map((v) => (
         <option key={v} value={v}>
-          {versionInfo[v].label} - {versionInfo[v].description}
+          {VERSION_INFO[v].label} - {VERSION_INFO[v].description}
+          {VERSION_INFO[v].offline ? ' (offline)' : ''}
         </option>
       ))}
     </select>

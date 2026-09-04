@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { SEO } from '@/components/seo/SEO'
 import { BookOpen, Search as SearchIcon, Bookmark, Calendar, GitCompare, Download } from 'lucide-react'
 import { VersionSelector } from '@/components/bible/VersionSelector'
 import { BookNavigator } from '@/components/bible/BookNavigator'
@@ -10,6 +11,7 @@ import { BibleComparison } from '@/components/bible/BibleComparison'
 import { OfflineBibleDownloader } from '@/components/bible/OfflineBibleDownloader'
 import { useBibleStore } from '@/store/bibleStore'
 import { useAuth } from '@/hooks/useAuth'
+import { AVAILABLE_VERSIONS } from '@/services/bible.service'
 import { BibleVersion } from '@/types/bible'
 
 export function BiblePage() {
@@ -20,15 +22,24 @@ export function BiblePage() {
   // Seed version from profile preference the first time this user opens the Bible
   // (only if they haven't manually chosen a version yet — localStorage key absent)
   useEffect(() => {
-    if (!user?.profile?.preferred_bible_version) return
+    const preferred = user?.profile?.preferred_bible_version as BibleVersion | undefined
+    if (!preferred) return
+    // A stored preference of NIV/NLT is unusable without an api.bible key, so
+    // only apply it when that version is actually on offer.
+    if (!AVAILABLE_VERSIONS.includes(preferred)) return
     const stored = localStorage.getItem('ack-bible-prefs')
     if (!stored) {
-      setVersion(user.profile.preferred_bible_version as BibleVersion)
+      setVersion(preferred)
     }
   }, [user?.id])
 
   return (
     <div className="space-y-4">
+      <SEO
+        title="Bible"
+        description="Read the Bible online with ACK St Francis Nkubu — multiple versions, bookmarks and daily reading, from the Anglican Church of Kenya parish in Nkubu, Meru County."
+        canonicalPath="/bible"
+      />
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-xl sm:text-3xl font-playfair text-navy">Bible Reader</h1>
         <VersionSelector />

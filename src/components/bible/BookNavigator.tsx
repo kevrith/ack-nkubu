@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ChevronDown, ChevronRight, AlertCircle } from 'lucide-react'
-import { bibleService } from '@/services/bible.service'
+import { bibleService, VERSION_INFO } from '@/services/bible.service'
 import { useBibleStore } from '@/store/bibleStore'
 import { BibleBook } from '@/types/bible'
 
@@ -39,14 +39,23 @@ export function BookNavigator() {
   if (loading) return <div className="p-4 text-gray-600">Loading books...</div>
   
   if (error) {
+    // Bundled versions never touch api.bible, so pointing at a missing key
+    // would send the reader down the wrong path.
+    const isOffline = VERSION_INFO[version].offline
     return (
       <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
         <div className="flex items-start gap-2 text-red-700">
           <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
           <div>
-            <div className="font-medium mb-1">API Error</div>
+            <div className="font-medium mb-1">
+              {isOffline ? 'Could not load this version' : 'API Error'}
+            </div>
             <div className="text-sm">{error}</div>
-            <div className="text-sm mt-2">Please add your api.bible key to .env.local</div>
+            <div className="text-sm mt-2">
+              {isOffline
+                ? 'Check your connection and try again — once downloaded, this version works offline.'
+                : 'Please add your api.bible key to .env.local'}
+            </div>
           </div>
         </div>
       </div>

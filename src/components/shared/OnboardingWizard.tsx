@@ -3,13 +3,16 @@ import { ChevronRight, ChevronLeft, Check, Church, BookOpen, Bell, Heart, Briefc
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { BibleVersion } from '@/types/bible'
+import { AVAILABLE_VERSIONS, VERSION_INFO } from '@/services/bible.service'
 
-const BIBLE_VERSIONS: BibleVersion[] = ['NIV', 'NLT', 'KJV']
+const BIBLE_VERSIONS: BibleVersion[] = AVAILABLE_VERSIONS
 
 const VERSION_DESC: Record<BibleVersion, string> = {
-  NIV: 'New International Version — clear, modern English',
-  NLT: 'New Living Translation — easy to read and understand',
-  KJV: 'King James Version — traditional, poetic language',
+  NIV:  'New International Version — clear, modern English',
+  NLT:  'New Living Translation — easy to read and understand',
+  KJV:  'King James Version — traditional, poetic language',
+  WEB:  'World English Bible — modern English, available offline',
+  ONEN: 'Neno: Bibilia Takatifu — Kiswahili, available offline',
 }
 
 interface CellGroup {
@@ -44,7 +47,7 @@ interface OnboardingWizardProps {
 export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   const { user } = useAuth()
   const [step, setStep] = useState(0)
-  const [selectedVersion, setSelectedVersion] = useState<BibleVersion>('NIV')
+  const [selectedVersion, setSelectedVersion] = useState<BibleVersion>(BIBLE_VERSIONS[0])
   const [selectedGroupId, setSelectedGroupId] = useState('')
   const [selectedMinistryIds, setSelectedMinistryIds] = useState<string[]>([])
   const [notifEnabled, setNotifEnabled] = useState(false)

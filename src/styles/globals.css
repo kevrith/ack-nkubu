@@ -126,6 +126,38 @@
   font-style: italic;
 }
 
+/* Indented list lines – genealogies and similar (USFM \li1, \li2) */
+.bible-content .li1,
+.bible-content .li2 {
+  display: block;
+  /* Hanging indent so wrapped lines stay clear of the verse number. */
+  text-indent: -0.75rem;
+  margin-bottom: 0.2rem;
+}
+.bible-content .li1 {
+  padding-left: 1.75rem;
+}
+.bible-content .li2 {
+  padding-left: 3rem;
+}
+
+/* Psalm / canticle descriptive titles (USFM \d) */
+.bible-content .d {
+  display: block;
+  font-style: italic;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+/* Cross-reference line under a section heading (USFM \r) */
+.bible-content .r {
+  display: block;
+  font-size: 0.85em;
+  font-style: italic;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
 /* Section headings within chapters */
 .bible-content .s1,
 .bible-content .ms {
