@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Image, Video, Music, File, Trash2, ExternalLink, Search } from 'lucide-react';
 import { MediaUploader } from '@/components/shared/MediaUploader';
@@ -13,12 +13,33 @@ interface MediaFile {
   created_at: string;
 }
 
+type UploadKind = 'photo' | 'video' | 'audio';
+
+// Android/iOS resolve the file picker from `accept`. A single top-level type
+// ("image/*") opens Photos/Gallery directly; a mixed list ("image/*,video/*,
+// audio/*") does not resolve to any gallery app, so the OS falls back to the
+// generic Camera / Camcorder / Files chooser. Hence one button per kind.
+const UPLOAD_KINDS: {
+  id: UploadKind;
+  label: string;
+  accept: string;
+  resourceType: 'image' | 'video' | 'audio';
+  icon: ReactNode;
+}[] = [
+  { id: 'photo', label: 'Photo', accept: 'image/*', resourceType: 'image', icon: <Image className="h-4 w-4" /> },
+  { id: 'video', label: 'Video', accept: 'video/*', resourceType: 'video', icon: <Video className="h-4 w-4" /> },
+  { id: 'audio', label: 'Audio', accept: 'audio/*', resourceType: 'audio', icon: <Music className="h-4 w-4" /> },
+];
+
 export function MediaLibrary() {
   const { user } = useAuth();
   const [media, setMedia] = useState<MediaFile[]>([]);
   const [filter, setFilter] = useState<'all' | 'image' | 'video' | 'audio'>('all');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [uploadKind, setUploadKind] = useState<UploadKind>('photo');
+
+  const activeKind = UPLOAD_KINDS.find((k) => k.id === uploadKind)!;
 
   useEffect(() => {
     loadMedia();
@@ -102,12 +123,33 @@ export function MediaLibrary() {
           </select>
         </div>
 
-        <MediaUploader
-          accept="image/*,video/*,audio/*"
-          resourceType="image"
-          onUploadComplete={handleUploadComplete}
-          label="Upload New File"
-        />
+        <div className="space-y-3">
+          <p className="block text-sm font-medium text-gray-700">Upload New File</p>
+          <div className="flex flex-wrap gap-2">
+            {UPLOAD_KINDS.map((k) => (
+              <button
+                key={k.id}
+                type="button"
+                onClick={() => setUploadKind(k.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm ${
+                  uploadKind === k.id
+                    ? 'bg-navy text-white border-navy'
+                    : 'bg-white text-navy border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                {k.icon}
+                {k.label}
+              </button>
+            ))}
+          </div>
+          <MediaUploader
+            key={uploadKind}
+            accept={activeKind.accept}
+            resourceType={activeKind.resourceType}
+            onUploadComplete={handleUploadComplete}
+            label=""
+          />
+        </div>
       </div>
 
       <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
